@@ -1,0 +1,1814 @@
+{
+  "schema": "boobly.kvdb.v1",
+  "version": "1.0.0",
+  "description": "Key-Value Pair Database optimized for image-generation prompting. Keys are JSON paths using dot-notation.",
+  "entries": [
+    {
+      "category": "image_metadata",
+      "path": "image_metadata.type",
+      "description": "Render intent / realism tier",
+      "values": [
+        "realistic",
+        "photoreal",
+        "photorealistic",
+        "hyperreal",
+        "cinematic"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "image_metadata.style",
+      "description": "Style tokens for realism",
+      "values": [
+        "DSLR realism",
+        "film still",
+        "HDR realism",
+        "cinematic realism",
+        "editorial",
+        "catalog realism",
+        "photorealistic",
+        "hyperreal"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "image_metadata.aspect_ratio",
+      "description": "Output aspect ratio",
+      "values": [
+        "4:5",
+        "16:9",
+        "2.35:1",
+        "2.39:1",
+        "2.40:1",
+        "1:1"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "image_metadata.orientation",
+      "description": "Orientation",
+      "values": [
+        "portrait",
+        "landscape"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "image_metadata.quality",
+      "description": "Quality preset",
+      "values": [
+        "ultra",
+        "high detail",
+        "micro detail"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "rendering_parameters.realism",
+      "description": "Realism tier",
+      "values": [
+        "realistic",
+        "photoreal",
+        "hyperreal",
+        "cinematic"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "rendering_parameters.noise",
+      "description": "Noise/grain profile",
+      "values": [
+        "clean",
+        "light grain",
+        "film grain",
+        "zero noise"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "rendering_parameters.dynamic_range",
+      "description": "Dynamic range token",
+      "values": [
+        "HDR",
+        "high"
+      ]
+    },
+    {
+      "category": "image_metadata",
+      "path": "rendering_parameters.texture_detail",
+      "description": "Texture detail emphasis",
+      "values": [
+        "skin pores",
+        "fabric weave",
+        "hair strands",
+        "high fidelity"
+      ]
+    },
+    {
+      "category": "lighting",
+      "path": "image_metadata.lighting.type",
+      "description": "Lighting source/type",
+      "values": [
+        "natural soft daylight",
+        "sunlight",
+        "studio softbox",
+        "soft directional",
+        "beauty dish",
+        "high-key",
+        "low-key",
+        "ring light"
+      ]
+    },
+    {
+      "category": "lighting",
+      "path": "image_metadata.lighting.direction",
+      "description": "Primary light direction",
+      "values": [
+        "front",
+        "side",
+        "back",
+        "rim",
+        "top",
+        "under",
+        "diagonal",
+        "\u00be front",
+        "\u00be back",
+        "wrap"
+      ]
+    },
+    {
+      "category": "lighting",
+      "path": "image_metadata.lighting.intensity",
+      "description": "Light intensity",
+      "values": [
+        "ultra soft",
+        "soft",
+        "medium",
+        "strong",
+        "harsh",
+        "low",
+        "high",
+        "HDR",
+        "balanced",
+        "flat"
+      ]
+    },
+    {
+      "category": "lighting",
+      "path": "image_metadata.lighting.color_temperature",
+      "description": "White balance / warmth",
+      "values": [
+        "neutral",
+        "warm",
+        "cool",
+        "golden",
+        "amber",
+        "teal",
+        "mixed"
+      ]
+    },
+    {
+      "category": "lighting",
+      "path": "image_metadata.lighting.effects",
+      "description": "Lighting effects",
+      "values": [
+        "soft highlights",
+        "specular highlights",
+        "rim light",
+        "feathered shadows",
+        "light wrap",
+        "light rays",
+        "reflections"
+      ]
+    },
+    {
+      "category": "environment",
+      "path": "image_metadata.environment.location",
+      "description": "Scene/location setting",
+      "values": [
+        "beach",
+        "tropical beach shoreline",
+        "coastal",
+        "rooftop",
+        "studio backdrop",
+        "neon alley",
+        "forest",
+        "desert dunes",
+        "snowy field",
+        "futuristic hall"
+      ]
+    },
+    {
+      "category": "environment",
+      "path": "image_metadata.environment.time_of_day",
+      "description": "Time of day",
+      "values": [
+        "dawn",
+        "sunrise",
+        "morning",
+        "noon",
+        "afternoon",
+        "sunset",
+        "dusk",
+        "golden hour",
+        "blue hour",
+        "neon night"
+      ]
+    },
+    {
+      "category": "environment",
+      "path": "image_metadata.environment.depth_of_field",
+      "description": "Depth of field profile",
+      "values": [
+        "shallow depth of field",
+        "natural DSLR depth",
+        "background bokeh",
+        "DOF blur"
+      ]
+    },
+    {
+      "category": "environment",
+      "path": "image_metadata.environment.background_blur",
+      "description": "Background blur strength",
+      "values": [
+        "light bokeh",
+        "medium bokeh",
+        "strong bokeh",
+        "depth haze"
+      ]
+    },
+    {
+      "category": "subject",
+      "path": "subject.category",
+      "description": "Subject class",
+      "values": [
+        "human"
+      ]
+    },
+    {
+      "category": "subject",
+      "path": "subject.gender_presentation",
+      "description": "Gender presentation",
+      "values": [
+        "female"
+      ]
+    },
+    {
+      "category": "subject",
+      "path": "subject.age_range",
+      "description": "Age bracket (numeric)",
+      "values": [
+        "18",
+        "21",
+        "25",
+        "28",
+        "32"
+      ]
+    },
+    {
+      "category": "pose",
+      "path": "subject.pose.stance",
+      "description": "Pose stance",
+      "values": [
+        "standing",
+        "walking",
+        "contrapposto",
+        "hands on hips",
+        "arms crossed lightly",
+        "over-shoulder",
+        "back view",
+        "seated upright",
+        "seated side",
+        "kneeling"
+      ]
+    },
+    {
+      "category": "pose",
+      "path": "subject.pose.body_angle",
+      "description": "Body angle to camera",
+      "values": [
+        "front",
+        "\u00be angle",
+        "profile",
+        "slightly angled right",
+        "slightly angled left"
+      ]
+    },
+    {
+      "category": "pose",
+      "path": "subject.pose.head",
+      "description": "Head direction/tilt",
+      "values": [
+        "forward",
+        "tilted slightly left",
+        "tilted slightly right",
+        "head turned over shoulder"
+      ]
+    },
+    {
+      "category": "pose",
+      "path": "subject.pose.arms",
+      "description": "Arm placement",
+      "values": [
+        "relaxed beside torso",
+        "raised slightly outward",
+        "hands on hips",
+        "arms crossed lightly"
+      ]
+    },
+    {
+      "category": "pose",
+      "path": "subject.pose.movement",
+      "description": "Motion cue",
+      "values": [
+        "standing",
+        "walking",
+        "tracking motion",
+        "splashing water",
+        "frozen motion"
+      ]
+    },
+    {
+      "category": "expression",
+      "path": "subject.expression.emotion",
+      "description": "Expression mood",
+      "values": [
+        "neutral",
+        "soft smile",
+        "serious",
+        "confident",
+        "calm",
+        "happy",
+        "excited"
+      ]
+    },
+    {
+      "category": "expression",
+      "path": "subject.expression.mouth",
+      "description": "Mouth shape",
+      "values": [
+        "neutral",
+        "soft smile",
+        "open smile showing teeth"
+      ]
+    },
+    {
+      "category": "expression",
+      "path": "subject.expression.eyes",
+      "description": "Gaze intent",
+      "values": [
+        "engaged toward camera",
+        "focused",
+        "calm",
+        "confident gaze"
+      ]
+    },
+    {
+      "category": "hair",
+      "path": "subject.hair.color",
+      "description": "Hair color",
+      "values": [
+        "jet black",
+        "soft black",
+        "blue black",
+        "espresso",
+        "dark brown",
+        "chestnut",
+        "cocoa",
+        "auburn",
+        "copper",
+        "ginger",
+        "strawberry blonde",
+        "golden blonde",
+        "honey blonde",
+        "ash blonde",
+        "platinum",
+        "silver",
+        "gray",
+        "rose gold",
+        "pastel pink",
+        "pastel blue",
+        "lavender",
+        "teal",
+        "ombre brown-blonde",
+        "balayage caramel"
+      ]
+    },
+    {
+      "category": "hair",
+      "path": "subject.hair.length",
+      "description": "Hair length",
+      "values": [
+        "buzz cut",
+        "pixie",
+        "chin length",
+        "shoulder",
+        "mid-back",
+        "waist",
+        "hip length",
+        "knee length",
+        "short layered",
+        "long layered"
+      ]
+    },
+    {
+      "category": "hair",
+      "path": "subject.hair.style",
+      "description": "Hair style",
+      "values": [
+        "straight",
+        "wavy",
+        "curly",
+        "coiled",
+        "afro",
+        "pixie",
+        "bob",
+        "lob",
+        "layered",
+        "feathered",
+        "shag",
+        "wolf cut",
+        "mullet",
+        "braid crown",
+        "twin braids",
+        "ponytail high",
+        "ponytail low",
+        "bun tight",
+        "bun messy",
+        "slick back",
+        "wet look",
+        "spiky",
+        "dreadlocks",
+        "microbraids"
+      ]
+    },
+    {
+      "category": "hair",
+      "path": "subject.hair.motion",
+      "description": "Hair motion",
+      "values": [
+        "wind movement",
+        "wind-swept",
+        "subtle hair movement",
+        "hair movement"
+      ]
+    },
+    {
+      "category": "skin",
+      "path": "subject.skin.tone",
+      "description": "Skin tone",
+      "values": [
+        "porcelain",
+        "fair",
+        "light",
+        "olive",
+        "tan",
+        "bronze",
+        "brown",
+        "deep brown",
+        "ebony"
+      ]
+    },
+    {
+      "category": "skin",
+      "path": "subject.skin.texture",
+      "description": "Skin texture fidelity",
+      "values": [
+        "visible pores",
+        "micro skin texture",
+        "natural skin texture",
+        "skin pores",
+        "peach fuzz"
+      ]
+    },
+    {
+      "category": "skin",
+      "path": "subject.skin.finish",
+      "description": "Skin finish",
+      "values": [
+        "natural",
+        "sunlit glow",
+        "matte",
+        "glossy",
+        "wet texture"
+      ]
+    },
+    {
+      "category": "skin",
+      "path": "subject.skin.water_droplets",
+      "description": "Water droplets present",
+      "values": [
+        "true",
+        "false"
+      ]
+    },
+    {
+      "category": "eyes",
+      "path": "subject.eyes.color",
+      "description": "Eye color",
+      "values": [
+        "bright blue",
+        "ice blue",
+        "hazel",
+        "hazel-brown",
+        "amber",
+        "emerald",
+        "steel gray",
+        "silver"
+      ]
+    },
+    {
+      "category": "eyes",
+      "path": "subject.eyes.makeup",
+      "description": "Makeup level",
+      "values": [
+        "none",
+        "minimal",
+        "natural",
+        "subtle natural tones"
+      ]
+    },
+    {
+      "category": "accessories",
+      "path": "subject.accessories[].type",
+      "description": "Accessory type",
+      "values": [
+        "sunglasses",
+        "choker",
+        "watch",
+        "bracelet",
+        "rings",
+        "earrings",
+        "cap",
+        "belt",
+        "gloves",
+        "necklace"
+      ]
+    },
+    {
+      "category": "accessories",
+      "path": "subject.accessories[].style",
+      "description": "Accessory styling",
+      "values": [
+        "minimal",
+        "stud",
+        "layered",
+        "stacked"
+      ]
+    },
+    {
+      "category": "accessories",
+      "path": "subject.accessories[].material",
+      "description": "Material",
+      "values": [
+        "metal",
+        "gold",
+        "silver",
+        "chrome",
+        "pearlescent"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.outfit_type",
+      "description": "Outfit type",
+      "values": [
+        "bikini",
+        "swimwear",
+        "one-piece swimwear",
+        "metallic bikini",
+        "sport bikini",
+        "mesh overlay set",
+        "gym compression set",
+        "yoga set",
+        "athleisure set"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.top.style",
+      "description": "Top style",
+      "values": [
+        "crop top",
+        "sports bra",
+        "tank",
+        "hoodie",
+        "oversized hoodie",
+        "halter",
+        "bandeau",
+        "jacket",
+        "vest",
+        "wrap top",
+        "bodysuit",
+        "cami",
+        "knit top",
+        "thermal top",
+        "long sleeve tee",
+        "short sleeve tee",
+        "sleeveless tee",
+        "bolero",
+        "shrug",
+        "cardigan",
+        "blazer",
+        "corset top",
+        "tube top",
+        "tactical vest",
+        "mesh top",
+        "fishnet top",
+        "latex top",
+        "vinyl top",
+        "bikini top",
+        "compression top"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.bottom.style",
+      "description": "Bottom style",
+      "values": [
+        "leggings",
+        "yoga pants",
+        "compression shorts",
+        "biker shorts",
+        "cargo pants",
+        "joggers",
+        "sweatpants",
+        "denim shorts",
+        "mini skirt",
+        "midi skirt",
+        "maxi skirt",
+        "pencil skirt",
+        "pleated skirt",
+        "wrap skirt",
+        "tennis skirt",
+        "tactical pants",
+        "leather pants",
+        "vinyl pants",
+        "skinny jeans",
+        "straight jeans",
+        "wide jeans",
+        "flare jeans",
+        "capri pants",
+        "track pants",
+        "harem pants",
+        "bloomers",
+        "bikini bottom",
+        "thong bottom",
+        "high-waist bottom",
+        "low-rise bottom"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.shoes",
+      "description": "Shoes",
+      "values": [
+        "sneakers",
+        "trainers",
+        "running shoes",
+        "cross trainers",
+        "combat boots",
+        "ankle boots",
+        "knee boots",
+        "thigh boots",
+        "stilettos",
+        "pumps",
+        "wedges",
+        "platforms",
+        "sandals",
+        "flip flops",
+        "slides",
+        "loafers",
+        "moccasins",
+        "ballet flats",
+        "espadrilles",
+        "clogs",
+        "hiking boots",
+        "cleats",
+        "skates",
+        "rollerblades",
+        "barefoot",
+        "tabi shoes",
+        "futuristic boots",
+        "armored boots",
+        "latex boots",
+        "sock shoes"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.accessories",
+      "description": "Accessories list",
+      "values": [
+        "sunglasses",
+        "aviators",
+        "visor glasses",
+        "choker",
+        "pendant necklace",
+        "chain necklace",
+        "pearl necklace",
+        "hoop earrings",
+        "stud earrings",
+        "drop earrings",
+        "bracelets",
+        "bangles",
+        "rings",
+        "anklet",
+        "belt",
+        "waist chain",
+        "gloves",
+        "fingerless gloves",
+        "arm sleeves",
+        "leg warmers",
+        "scarf",
+        "bandana",
+        "cap",
+        "beanie",
+        "beret",
+        "helmet",
+        "smartwatch",
+        "analog watch",
+        "ear cuffs",
+        "hair clips"
+      ]
+    },
+    {
+      "category": "clothing",
+      "path": "clothing.material_appearance",
+      "description": "Material appearance",
+      "values": [
+        "stretch fabric",
+        "shiny wet fabric",
+        "glossy",
+        "matte",
+        "metallic",
+        "latex",
+        "vinyl",
+        "mesh",
+        "woven texture",
+        "fabric weave visible"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.framing",
+      "description": "Framing preset",
+      "values": [
+        "full body",
+        "\u00be body",
+        "waist crop",
+        "close portrait",
+        "detail shot",
+        "\u00bd body",
+        "chest crop",
+        "shoulder crop",
+        "extreme close",
+        "macro detail",
+        "wide scene",
+        "silhouette"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.subject_position",
+      "description": "Composition placement",
+      "values": [
+        "centered",
+        "rule of thirds",
+        "symmetrical",
+        "off-center"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.camera_angle",
+      "description": "Camera angle",
+      "values": [
+        "eye level",
+        "slight high angle",
+        "moderately high angle",
+        "high angle",
+        "slightly low angle",
+        "\u00be angle",
+        "dutch angle"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.lens_type",
+      "description": "Lens type",
+      "values": [
+        "portrait lens",
+        "24mm",
+        "35mm",
+        "50mm",
+        "85mm",
+        "135mm",
+        "anamorphic"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.focal_length_equivalent",
+      "description": "Focal length",
+      "values": [
+        "24mm",
+        "35mm",
+        "50mm",
+        "85mm",
+        "135mm",
+        "200mm"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.focus_point",
+      "description": "Focus point",
+      "values": [
+        "eyes",
+        "face",
+        "subject",
+        "torso"
+      ]
+    },
+    {
+      "category": "composition",
+      "path": "composition.sharpness",
+      "description": "Sharpness profile",
+      "values": [
+        "soft focus",
+        "sharp",
+        "ultra sharp",
+        "subject sharp",
+        "eyes razor sharp"
+      ]
+    },
+    {
+      "category": "effects",
+      "path": "effects.bokeh.size",
+      "description": "Bokeh size",
+      "values": [
+        "small",
+        "medium",
+        "large"
+      ]
+    },
+    {
+      "category": "effects",
+      "path": "effects.bokeh.shape",
+      "description": "Bokeh shape",
+      "values": [
+        "circular"
+      ]
+    },
+    {
+      "category": "effects",
+      "path": "effects.color_grading.contrast",
+      "description": "Contrast level",
+      "values": [
+        "low",
+        "balanced",
+        "medium",
+        "high",
+        "moderate high"
+      ]
+    },
+    {
+      "category": "effects",
+      "path": "effects.color_grading.saturation",
+      "description": "Saturation level",
+      "values": [
+        "muted",
+        "natural",
+        "vivid",
+        "oversaturated",
+        "desaturated"
+      ]
+    },
+    {
+      "category": "effects",
+      "path": "effects.color_grading.tones",
+      "description": "Tone palette",
+      "values": [
+        "warm tones",
+        "cool tones",
+        "teal-orange",
+        "neutral grade",
+        "cinematic grade",
+        "warm highlights, balanced shadows"
+      ]
+    },
+    {
+      "category": "library",
+      "path": "library.lighting_variation_matrix",
+      "description": "Preset lighting modes",
+      "values": [
+        "studio softbox",
+        "high-key",
+        "low-key",
+        "beauty dish",
+        "ring light",
+        "soft directional",
+        "hard spotlight",
+        "rim light",
+        "flat light",
+        "split light",
+        "butterfly light",
+        "clamshell light"
+      ]
+    },
+    {
+      "category": "library",
+      "path": "library.background_matrix",
+      "description": "Preset backgrounds",
+      "values": [
+        "white seamless",
+        "gray seamless",
+        "black seamless",
+        "beige studio",
+        "pastel studio",
+        "gradient backdrop",
+        "brick wall",
+        "concrete wall",
+        "marble wall",
+        "luxury interior",
+        "modern apartment",
+        "rooftop",
+        "neon alley",
+        "cyberpunk street",
+        "forest",
+        "jungle",
+        "desert dunes",
+        "snowy field",
+        "beach",
+        "ocean horizon",
+        "mountain ridge",
+        "futuristic hall"
+      ]
+    },
+    {
+      "category": "library",
+      "path": "library.camera_physics_body_effects",
+      "description": "Camera position/lens effects presets",
+      "values": [
+        "slight high",
+        "moderate high",
+        "extreme high",
+        "eye level",
+        "slight low",
+        "moderate low",
+        "extreme low",
+        "close distance",
+        "medium distance",
+        "far distance",
+        "telephoto lens",
+        "wide lens",
+        "tilted lens",
+        "side angle",
+        "\u00be angle",
+        "front angle",
+        "rear angle",
+        "overhead",
+        "ground level",
+        "tracking shot",
+        "zoomed crop",
+        "long lens"
+      ]
+    },
+    {
+      "category": "library",
+      "path": "library.photography_terminology",
+      "description": "Photography terms",
+      "values": [
+        "high angle",
+        "low angle",
+        "eye level",
+        "dutch angle",
+        "bird\u2019s eye",
+        "worm\u2019s eye",
+        "macro shot",
+        "wide shot",
+        "medium shot",
+        "close-up",
+        "extreme close-up",
+        "over-shoulder shot",
+        "profile shot",
+        "frontal shot",
+        "back shot",
+        "tracking shot",
+        "static shot",
+        "portrait orientation"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.environment_types",
+      "description": "Scene construction: environment types",
+      "values": [
+        "beach",
+        "jungle",
+        "forest",
+        "tundra",
+        "desert",
+        "canyon",
+        "mountain",
+        "valley",
+        "meadow",
+        "swamp",
+        "cave",
+        "cliff",
+        "island",
+        "volcano",
+        "glacier",
+        "savanna",
+        "reef",
+        "waterfall",
+        "oasis",
+        "plateau"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.architecture",
+      "description": "Scene construction: architecture",
+      "values": [
+        "studio",
+        "apartment",
+        "loft",
+        "mansion",
+        "castle",
+        "temple",
+        "palace",
+        "warehouse",
+        "hangar",
+        "lab",
+        "bunker",
+        "corridor",
+        "hallway",
+        "rooftop",
+        "balcony",
+        "bridge",
+        "subway",
+        "arena",
+        "mall",
+        "garage"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.time_of_day",
+      "description": "Scene construction: time of day",
+      "values": [
+        "dawn",
+        "sunrise",
+        "morning",
+        "noon",
+        "afternoon",
+        "sunset",
+        "dusk",
+        "twilight",
+        "midnight",
+        "night",
+        "blue hour",
+        "golden hour",
+        "pre-dawn",
+        "early morning",
+        "late afternoon",
+        "evening",
+        "solar noon",
+        "eclipse",
+        "storm dusk",
+        "neon night"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.weather",
+      "description": "Scene construction: weather",
+      "values": [
+        "clear",
+        "cloudy",
+        "overcast",
+        "rain",
+        "drizzle",
+        "storm",
+        "lightning",
+        "snow",
+        "blizzard",
+        "fog",
+        "mist",
+        "haze",
+        "wind",
+        "sandstorm",
+        "hail",
+        "humidity",
+        "frost",
+        "heatwave",
+        "rainbow",
+        "aurora"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.ground_surface",
+      "description": "Scene construction: ground surface",
+      "values": [
+        "sand",
+        "stone",
+        "grass",
+        "marble",
+        "tile",
+        "metal",
+        "asphalt",
+        "wood",
+        "ice",
+        "snow",
+        "lava rock",
+        "dirt",
+        "gravel",
+        "moss",
+        "carpet",
+        "glass",
+        "concrete",
+        "mud",
+        "leaves",
+        "water"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.background_elements",
+      "description": "Scene construction: background elements",
+      "values": [
+        "trees",
+        "mountains",
+        "skyline",
+        "ocean",
+        "dunes",
+        "buildings",
+        "ruins",
+        "statues",
+        "clouds",
+        "stars",
+        "sun",
+        "moon",
+        "nebula",
+        "fog bank",
+        "crowd",
+        "vehicles",
+        "machinery",
+        "pillars",
+        "arches",
+        "banners"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.motion_elements",
+      "description": "Scene construction: motion elements",
+      "values": [
+        "wind hair",
+        "flying sand",
+        "falling snow",
+        "rain drops",
+        "splashing water",
+        "drifting smoke",
+        "sparks",
+        "floating dust",
+        "leaves blowing",
+        "fabric flow",
+        "flame flicker",
+        "ripples",
+        "bubbles",
+        "embers",
+        "lightning streak",
+        "mist swirl",
+        "hair movement",
+        "cloth flutter",
+        "particle glow",
+        "wave crash"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.depth_effects",
+      "description": "Scene construction: depth effects",
+      "values": [
+        "foreground blur",
+        "background blur",
+        "atmospheric haze",
+        "depth fog",
+        "shadow layers",
+        "light rays",
+        "reflections",
+        "refractions",
+        "silhouettes",
+        "glow bloom",
+        "gradient depth",
+        "color fade",
+        "lens haze",
+        "mist layers",
+        "parallax props",
+        "DOF blur",
+        "soft edges",
+        "sharp subject",
+        "vignette",
+        "rim glow"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.color_palette",
+      "description": "Scene construction: color palette",
+      "values": [
+        "monochrome",
+        "pastel",
+        "neon",
+        "muted",
+        "earth tones",
+        "warm tones",
+        "cool tones",
+        "complementary",
+        "triadic",
+        "high contrast",
+        "low contrast",
+        "sepia",
+        "teal-orange",
+        "infrared",
+        "cinematic LUT",
+        "vintage film",
+        "HDR tone",
+        "matte grade",
+        "washed tones",
+        "saturated"
+      ]
+    },
+    {
+      "category": "scene_construction",
+      "path": "library.scene_construction.scene_mood",
+      "description": "Scene construction: scene mood",
+      "values": [
+        "calm",
+        "energetic",
+        "tense",
+        "dreamy",
+        "mysterious",
+        "ominous",
+        "romantic",
+        "heroic",
+        "dramatic",
+        "serene",
+        "eerie",
+        "joyful",
+        "melancholic",
+        "suspenseful",
+        "majestic",
+        "playful",
+        "tranquil",
+        "intense",
+        "epic",
+        "surreal"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.direction",
+      "description": "Lighting detail: direction",
+      "values": [
+        "front",
+        "side",
+        "back",
+        "rim",
+        "top",
+        "under",
+        "diagonal",
+        "\u00be front",
+        "\u00be back",
+        "overhead",
+        "ground",
+        "lateral",
+        "split",
+        "cross",
+        "wrap",
+        "spotlight",
+        "edge",
+        "offset",
+        "centered",
+        "moving"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.intensity",
+      "description": "Lighting detail: intensity",
+      "values": [
+        "ultra soft",
+        "soft",
+        "medium",
+        "strong",
+        "harsh",
+        "dim",
+        "low",
+        "high",
+        "HDR",
+        "blown",
+        "muted",
+        "faded",
+        "balanced",
+        "bright",
+        "extreme bright",
+        "subtle",
+        "low key",
+        "high key",
+        "punchy",
+        "flat"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.diffusion",
+      "description": "Lighting detail: diffusion",
+      "values": [
+        "none",
+        "silk",
+        "softbox",
+        "umbrella",
+        "cloud diffused",
+        "fog diffused",
+        "scrim",
+        "translucent panel",
+        "bounce diffused",
+        "wall bounce",
+        "ceiling bounce",
+        "mist diffused",
+        "haze diffused",
+        "reflector fill",
+        "gel softened",
+        "paper diffused",
+        "glass diffused",
+        "cloth diffused",
+        "skin diffused",
+        "atmosphere diffused"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.color",
+      "description": "Lighting detail: color",
+      "values": [
+        "white",
+        "warm",
+        "cool",
+        "blue",
+        "cyan",
+        "teal",
+        "green",
+        "lime",
+        "yellow",
+        "gold",
+        "amber",
+        "orange",
+        "red",
+        "magenta",
+        "pink",
+        "purple",
+        "violet",
+        "neutral",
+        "mixed",
+        "gradient"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.contrast",
+      "description": "Lighting detail: contrast",
+      "values": [
+        "ultra low",
+        "low",
+        "mild",
+        "balanced",
+        "medium",
+        "strong",
+        "high",
+        "extreme",
+        "harsh",
+        "punchy",
+        "cinematic",
+        "soft rolloff",
+        "HDR",
+        "matte",
+        "flat",
+        "deep blacks",
+        "lifted blacks",
+        "crushed blacks",
+        "bright whites",
+        "muted whites"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.spread",
+      "description": "Lighting detail: spread",
+      "values": [
+        "spot",
+        "narrow",
+        "medium cone",
+        "wide",
+        "flood",
+        "omni",
+        "beam",
+        "strip",
+        "ring",
+        "panel",
+        "bar",
+        "dome",
+        "directional",
+        "scattered",
+        "radial",
+        "centered",
+        "edge spread",
+        "halo",
+        "glow spread",
+        "line spread"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.source_type",
+      "description": "Lighting detail: source type",
+      "values": [
+        "sun",
+        "moon",
+        "studio strobe",
+        "LED panel",
+        "tungsten bulb",
+        "fluorescent tube",
+        "neon tube",
+        "candle",
+        "fire",
+        "lava glow",
+        "screen light",
+        "projector",
+        "spotlight",
+        "flashlight",
+        "lantern",
+        "hologram light",
+        "bioluminescence",
+        "lightning",
+        "reflection bounce",
+        "practical lamp"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.shadow_type",
+      "description": "Lighting detail: shadow type",
+      "values": [
+        "hard edge",
+        "soft edge",
+        "feathered",
+        "double shadow",
+        "colored shadow",
+        "diffused shadow",
+        "contact shadow",
+        "long shadow",
+        "short shadow",
+        "split shadow",
+        "rim shadow",
+        "ambient shadow",
+        "cast shadow",
+        "gradient shadow",
+        "sharp shadow",
+        "blurred shadow",
+        "layered shadow",
+        "moving shadow",
+        "flicker shadow",
+        "minimal shadow"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.reflection_type",
+      "description": "Lighting detail: reflection type",
+      "values": [
+        "mirror",
+        "glossy",
+        "wet surface",
+        "metallic",
+        "glass",
+        "chrome",
+        "water reflection",
+        "polished stone",
+        "satin",
+        "matte reflection",
+        "diffuse reflection",
+        "floor reflection",
+        "skin sheen",
+        "fabric sheen",
+        "oil sheen",
+        "ice reflection",
+        "plastic reflection",
+        "pearl reflection",
+        "holographic reflection",
+        "neon reflection"
+      ]
+    },
+    {
+      "category": "lighting_detail",
+      "path": "library.lighting_detail.realism_style",
+      "description": "Lighting detail: realism style",
+      "values": [
+        "photoreal",
+        "cinematic",
+        "editorial",
+        "catalog",
+        "documentary",
+        "film still",
+        "HDR realism",
+        "hyperreal",
+        "stylized realism",
+        "unreal render",
+        "game render",
+        "VFX plate",
+        "raw photo",
+        "DSLR look",
+        "IMAX look",
+        "vintage film",
+        "matte realism",
+        "studio realism",
+        "outdoor realism",
+        "natural light realism"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.render_engine",
+      "description": "Visual style: render engine",
+      "values": [
+        "photoreal render",
+        "raytrace render",
+        "pathtrace render",
+        "raster render",
+        "realtime render",
+        "cinematic render",
+        "VFX render",
+        "studio render",
+        "Unreal style",
+        "Octane style",
+        "Redshift style",
+        "Arnold style",
+        "Blender Cycles style",
+        "game engine style",
+        "DSLR simulation",
+        "film camera sim",
+        "AI hyperreal",
+        "HDR pipeline",
+        "matte pipeline",
+        "catalog pipeline"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.detail_level",
+      "description": "Visual style: detail level",
+      "values": [
+        "low detail",
+        "medium detail",
+        "high detail",
+        "ultra detail",
+        "micro detail",
+        "skin detail",
+        "fabric detail",
+        "hair detail",
+        "pore detail",
+        "macro detail",
+        "texture detail",
+        "cinematic detail",
+        "realistic detail",
+        "extreme detail",
+        "simplified detail",
+        "clean detail",
+        "noisy detail",
+        "balanced detail",
+        "enhanced detail",
+        "sharp detail"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.texture_fidelity",
+      "description": "Visual style: texture fidelity",
+      "values": [
+        "flat texture",
+        "matte texture",
+        "glossy texture",
+        "metallic texture",
+        "rough texture",
+        "smooth texture",
+        "velvet texture",
+        "silk texture",
+        "leather texture",
+        "plastic texture",
+        "wet texture",
+        "dry texture",
+        "porous texture",
+        "reflective texture",
+        "translucent texture",
+        "subsurface texture",
+        "grain texture",
+        "woven texture",
+        "brushed texture",
+        "polished texture"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.color_grading",
+      "description": "Visual style: color grading",
+      "values": [
+        "neutral grade",
+        "cinematic grade",
+        "teal orange",
+        "warm grade",
+        "cool grade",
+        "desaturated",
+        "oversaturated",
+        "pastel grade",
+        "high contrast",
+        "low contrast",
+        "vintage grade",
+        "bleach bypass",
+        "matte grade",
+        "HDR grade",
+        "filmic grade",
+        "faded grade",
+        "vibrant grade",
+        "monochrome",
+        "duotone",
+        "tri-tone"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.lens_simulation",
+      "description": "Visual style: lens simulation",
+      "values": [
+        "24mm",
+        "35mm",
+        "50mm",
+        "85mm",
+        "135mm",
+        "200mm",
+        "macro lens",
+        "fisheye",
+        "tilt shift",
+        "anamorphic",
+        "wide lens",
+        "telephoto",
+        "portrait lens",
+        "cine lens",
+        "DSLR lens",
+        "phone lens",
+        "IMAX lens",
+        "surveillance lens",
+        "vintage lens",
+        "soft focus lens"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.film_stock",
+      "description": "Visual style: film stock",
+      "values": [
+        "kodak style",
+        "fuji style",
+        "polaroid style",
+        "slide film",
+        "negative film",
+        "ISO100 look",
+        "ISO400 look",
+        "ISO800 look",
+        "grain heavy",
+        "grain light",
+        "cinema film",
+        "documentary film",
+        "retro film",
+        "faded film",
+        "contrast film",
+        "color film",
+        "black white film",
+        "sepia film",
+        "expired film",
+        "clean digital"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.realism_tier",
+      "description": "Visual style: realism tier",
+      "values": [
+        "stylized",
+        "semi real",
+        "realistic",
+        "photoreal",
+        "hyperreal",
+        "cinematic real",
+        "editorial real",
+        "catalog real",
+        "documentary real",
+        "simulation real",
+        "game real",
+        "VFX real",
+        "film real",
+        "DSLR real",
+        "studio real",
+        "outdoor real",
+        "HDR real",
+        "matte real",
+        "natural real",
+        "ultra real"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.sharpness_profile",
+      "description": "Visual style: sharpness profile",
+      "values": [
+        "soft focus",
+        "mild sharp",
+        "sharp",
+        "ultra sharp",
+        "edge sharp",
+        "detail sharp",
+        "subject sharp",
+        "background sharp",
+        "uniform sharp",
+        "center sharp",
+        "corner sharp",
+        "motion blur",
+        "lens blur",
+        "depth blur",
+        "gaussian blur",
+        "tilt blur",
+        "radial blur",
+        "crisp focus",
+        "micro sharp",
+        "oversharp"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.noise_profile",
+      "description": "Visual style: noise profile",
+      "values": [
+        "clean",
+        "light grain",
+        "film grain",
+        "heavy grain",
+        "digital noise",
+        "chroma noise",
+        "luma noise",
+        "ISO noise",
+        "compression noise",
+        "scan noise",
+        "vintage grain",
+        "cinematic grain",
+        "monochrome grain",
+        "fine grain",
+        "coarse grain",
+        "HDR noise",
+        "shadow noise",
+        "highlight noise",
+        "zero noise",
+        "balanced noise"
+      ]
+    },
+    {
+      "category": "visual_style",
+      "path": "library.visual_style.post_processing",
+      "description": "Visual style: post processing",
+      "values": [
+        "none",
+        "color correction",
+        "tone mapping",
+        "HDR merge",
+        "bloom",
+        "vignette",
+        "lens flare",
+        "chromatic aberration",
+        "sharpening",
+        "denoise",
+        "skin smoothing",
+        "highlight rolloff",
+        "shadow lift",
+        "contrast boost",
+        "color boost",
+        "LUT applied",
+        "film emulation",
+        "glow effect",
+        "depth enhance",
+        "clarity boost"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,330 @@
+{
+  "schema": "boobly.prompts.v1",
+  "version": "1.0.0",
+  "model_targets": [
+    "OpenAI ChatGPT-5.2"
+  ],
+  "prompts": {
+    "master_prompt": "You are an image-prompt compiler for OpenAI ChatGPT-5.2 Image Generation.\nInput: a RAW JSON or a JSON file containing scene/subject/camera/lighting fields.\nTask:\n1) Validate JSON. If invalid: output a concise error list with line/field hints.\n2) If valid: normalize keys to the BooBly KVDB schema (dot-paths). Keep unknown keys.\n3) For each key: if the JSON value is empty or missing, choose a value from the KVDB values list that best matches the user\u2019s intent; otherwise keep the JSON value.\n4) Produce:\n   A) Final JSON (same structure as input, filled where missing)\n   B) A single \u201cFINAL IMAGE PROMPT\u201d string (deterministic, concrete, non-metaphorical) suitable for OpenAI Image Generation.\n   C) A \u201cNEGATIVE PROMPT\u201d string (style + anatomy failure blockers), only if requested.\nRules:\n- Use camera-valid terms (lens, angle, distance, DOF) and concrete physical descriptors.\n- Avoid vague adjectives; prioritize measurable/visual traits.\n- Preserve identity-critical fields (pose, outfit, colors, expression) unless explicitly overridden.",
+    "model_specific": [
+      {
+        "id": "gpt52_image_prompt_compiler_v1",
+        "title": "GPT-5.2 Image Prompt Compiler",
+        "prompt": "You are optimizing prompts specifically for OpenAI ChatGPT-5.2 image generation.\nGiven: (1) a JSON spec and (2) BooBly KVDB.\nOutput: a single, tightly written prompt:\n- Start with: subject + age + key facial/skin/hair traits.\n- Then: outfit (materials/colors) + pose.\n- Then: camera (angle, lens, DOF, framing) + lighting (type, direction, softness).\n- Then: environment + depth elements + rendering tokens.\nInclude only details that influence pixels. Avoid metaphors."
+      },
+      {
+        "id": "gpt52_negative_prompt_v1",
+        "title": "GPT-5.2 Negative Prompt Builder",
+        "prompt": "Generate a compact negative prompt that blocks common failures:\n- style drift (anime/cartoon/CGI/3D render)\n- anatomy errors (extra limbs, fused fingers, warped face)\n- skin artifacts (plastic skin, oversmoothing)\n- lens/lighting artifacts (unnatural blur, fake bokeh)\nReturn as a comma-separated list."
+      }
+    ],
+    "use_cases": {
+      "image_type": [
+        {
+          "id": "image_type_hyperreal_01",
+          "title": "Image Type Hyperreal #1",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 1."
+        },
+        {
+          "id": "image_type_hyperreal_02",
+          "title": "Image Type Hyperreal #2",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 2."
+        },
+        {
+          "id": "image_type_hyperreal_03",
+          "title": "Image Type Hyperreal #3",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 3."
+        },
+        {
+          "id": "image_type_hyperreal_04",
+          "title": "Image Type Hyperreal #4",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 4."
+        },
+        {
+          "id": "image_type_hyperreal_05",
+          "title": "Image Type Hyperreal #5",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 5."
+        },
+        {
+          "id": "image_type_hyperreal_06",
+          "title": "Image Type Hyperreal #6",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 6."
+        },
+        {
+          "id": "image_type_hyperreal_07",
+          "title": "Image Type Hyperreal #7",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 7."
+        },
+        {
+          "id": "image_type_hyperreal_08",
+          "title": "Image Type Hyperreal #8",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 8."
+        },
+        {
+          "id": "image_type_hyperreal_09",
+          "title": "Image Type Hyperreal #9",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 9."
+        },
+        {
+          "id": "image_type_hyperreal_10",
+          "title": "Image Type Hyperreal #10",
+          "prompt": "Using the provided JSON, produce a hyperreal photoreal image prompt. Enforce: DSLR realism, visible pores, natural imperfections, realistic hair strands, true perspective, shallow DOF, camera-valid lens (50mm/85mm). Keep colors/outfit/pose. Output: FINAL IMAGE PROMPT only. Variant 10."
+        },
+        {
+          "id": "image_type_anime_01",
+          "title": "Image Type Anime #1",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 1."
+        },
+        {
+          "id": "image_type_anime_02",
+          "title": "Image Type Anime #2",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 2."
+        },
+        {
+          "id": "image_type_anime_03",
+          "title": "Image Type Anime #3",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 3."
+        },
+        {
+          "id": "image_type_anime_04",
+          "title": "Image Type Anime #4",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 4."
+        },
+        {
+          "id": "image_type_anime_05",
+          "title": "Image Type Anime #5",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 5."
+        },
+        {
+          "id": "image_type_anime_06",
+          "title": "Image Type Anime #6",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 6."
+        },
+        {
+          "id": "image_type_anime_07",
+          "title": "Image Type Anime #7",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 7."
+        },
+        {
+          "id": "image_type_anime_08",
+          "title": "Image Type Anime #8",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 8."
+        },
+        {
+          "id": "image_type_anime_09",
+          "title": "Image Type Anime #9",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 9."
+        },
+        {
+          "id": "image_type_anime_10",
+          "title": "Image Type Anime #10",
+          "prompt": "Using the provided JSON, produce an anime-style prompt but keep the same composition. Enforce: clean line art, cel shading, anime proportions, vibrant palette. Also output a negative prompt blocking photoreal traits. Variant 10."
+        }
+      ],
+      "add_on_effect": [
+        {
+          "id": "addon_color_filters_01",
+          "title": "Addon Color Filters #1",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 1."
+        },
+        {
+          "id": "addon_color_filters_02",
+          "title": "Addon Color Filters #2",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 2."
+        },
+        {
+          "id": "addon_color_filters_03",
+          "title": "Addon Color Filters #3",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 3."
+        },
+        {
+          "id": "addon_color_filters_04",
+          "title": "Addon Color Filters #4",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 4."
+        },
+        {
+          "id": "addon_color_filters_05",
+          "title": "Addon Color Filters #5",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 5."
+        },
+        {
+          "id": "addon_color_filters_06",
+          "title": "Addon Color Filters #6",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 6."
+        },
+        {
+          "id": "addon_color_filters_07",
+          "title": "Addon Color Filters #7",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 7."
+        },
+        {
+          "id": "addon_color_filters_08",
+          "title": "Addon Color Filters #8",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 8."
+        },
+        {
+          "id": "addon_color_filters_09",
+          "title": "Addon Color Filters #9",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 9."
+        },
+        {
+          "id": "addon_color_filters_10",
+          "title": "Addon Color Filters #10",
+          "prompt": "Take the JSON and add a color-grading directive that clearly changes the look (e.g., teal-orange, matte grade, vintage film). Keep all other fields stable. Output: FINAL IMAGE PROMPT + updated JSON patch. Variant 10."
+        },
+        {
+          "id": "addon_stylization_01",
+          "title": "Addon Stylization #1",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 1."
+        },
+        {
+          "id": "addon_stylization_02",
+          "title": "Addon Stylization #2",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 2."
+        },
+        {
+          "id": "addon_stylization_03",
+          "title": "Addon Stylization #3",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 3."
+        },
+        {
+          "id": "addon_stylization_04",
+          "title": "Addon Stylization #4",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 4."
+        },
+        {
+          "id": "addon_stylization_05",
+          "title": "Addon Stylization #5",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 5."
+        },
+        {
+          "id": "addon_stylization_06",
+          "title": "Addon Stylization #6",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 6."
+        },
+        {
+          "id": "addon_stylization_07",
+          "title": "Addon Stylization #7",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 7."
+        },
+        {
+          "id": "addon_stylization_08",
+          "title": "Addon Stylization #8",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 8."
+        },
+        {
+          "id": "addon_stylization_09",
+          "title": "Addon Stylization #9",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 9."
+        },
+        {
+          "id": "addon_stylization_10",
+          "title": "Addon Stylization #10",
+          "prompt": "Take the JSON and add one stylization effect (bloom, vignette, lens flare, chromatic aberration, film grain) while keeping realism. Output: FINAL IMAGE PROMPT + NEGATIVE PROMPT. Variant 10."
+        }
+      ],
+      "converting": [
+        {
+          "id": "convert_anime_to_real_01",
+          "title": "Convert Anime To Real #1",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 1."
+        },
+        {
+          "id": "convert_anime_to_real_02",
+          "title": "Convert Anime To Real #2",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 2."
+        },
+        {
+          "id": "convert_anime_to_real_03",
+          "title": "Convert Anime To Real #3",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 3."
+        },
+        {
+          "id": "convert_anime_to_real_04",
+          "title": "Convert Anime To Real #4",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 4."
+        },
+        {
+          "id": "convert_anime_to_real_05",
+          "title": "Convert Anime To Real #5",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 5."
+        },
+        {
+          "id": "convert_anime_to_real_06",
+          "title": "Convert Anime To Real #6",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 6."
+        },
+        {
+          "id": "convert_anime_to_real_07",
+          "title": "Convert Anime To Real #7",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 7."
+        },
+        {
+          "id": "convert_anime_to_real_08",
+          "title": "Convert Anime To Real #8",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 8."
+        },
+        {
+          "id": "convert_anime_to_real_09",
+          "title": "Convert Anime To Real #9",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 9."
+        },
+        {
+          "id": "convert_anime_to_real_10",
+          "title": "Convert Anime To Real #10",
+          "prompt": "Convert an anime character described in JSON into a real human female photograph while preserving identity (hair/outfit/pose/colors). Enforce: realistic facial proportions, real skin pores, natural lighting physics, DSLR look. Include negative prompt blocking anime/cel shading. Variant 10."
+        },
+        {
+          "id": "convert_real_to_anime_01",
+          "title": "Convert Real To Anime #1",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 1."
+        },
+        {
+          "id": "convert_real_to_anime_02",
+          "title": "Convert Real To Anime #2",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 2."
+        },
+        {
+          "id": "convert_real_to_anime_03",
+          "title": "Convert Real To Anime #3",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 3."
+        },
+        {
+          "id": "convert_real_to_anime_04",
+          "title": "Convert Real To Anime #4",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 4."
+        },
+        {
+          "id": "convert_real_to_anime_05",
+          "title": "Convert Real To Anime #5",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 5."
+        },
+        {
+          "id": "convert_real_to_anime_06",
+          "title": "Convert Real To Anime #6",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 6."
+        },
+        {
+          "id": "convert_real_to_anime_07",
+          "title": "Convert Real To Anime #7",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 7."
+        },
+        {
+          "id": "convert_real_to_anime_08",
+          "title": "Convert Real To Anime #8",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 8."
+        },
+        {
+          "id": "convert_real_to_anime_09",
+          "title": "Convert Real To Anime #9",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 9."
+        },
+        {
+          "id": "convert_real_to_anime_10",
+          "title": "Convert Real To Anime #10",
+          "prompt": "Convert a real human photo-style JSON into anime while preserving identity cues. Enforce: anime rendering, cel shading, line art, simplified skin texture. Include negative prompt blocking photoreal/pores. Variant 10."
+        }
+      ]
+    }
+  }
+}

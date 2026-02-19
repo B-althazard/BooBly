@@ -1,0 +1,20 @@
+{
+  "name": "BooBly",
+  "short_name": "BooBly",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eeeeee",
+  "theme_color": "#ff57c6",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
