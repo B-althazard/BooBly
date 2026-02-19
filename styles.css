@@ -355,3 +355,26 @@ textarea{min-height:160px; font-family:var(--mono); font-size:12px; line-height:
 /* Slightly better contrast on table labels */
 .kvKey{opacity:.78;}
 [data-theme="dark"] .kvKey{opacity:.82;}
+
+/* v1.2.4 additions */
+/* v1.2.4 additions */
+
+.inlineRow{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+.inlineRow .btn{flex:1; min-width: 140px;}
+
+.btnRowTop{display:flex; gap:10px; flex-wrap:wrap;}
+.btnRowTop .btn{flex:1; min-width: 160px;}
+
+.consoleBox{max-height: 220px;}
+
+.homeGallery .cap{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  opacity: .78;
+}
+
+/* Settings: keep toggle inside card */
+.settingsRow{display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;}
+.settingsRow .small{margin:0;}

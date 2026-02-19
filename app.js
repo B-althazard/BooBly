@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.3";
+const VERSION = "1.2.4";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -462,21 +462,22 @@ function openModal(contentNode) {
 
 function openHelpModal() {
   const steps = [
-    "1) Home: review your most recent presets.",
-    "2) Create: import RAW JSON or upload a .json file.",
-    "3) Use “Convert → Master” to normalize the JSON into BooBly’s master template.",
-    "4) Edit: adjust fields (hair/eyes/freckles etc.). Changes are saved locally to prevent refresh loss.",
-    "5) Save Preset: stores JSON + optional image (upload in Settings → Presets).",
-    "6) Optimize: choose model + use-case blocks; optionally merge JSON + prompts into one output.",
-    "7) Settings: import/export database, prompts, or everything; set wallpaper; set LLM URL.",
+    "Home: review your most recent presets (tap any image to open).",
+    "Create: import RAW JSON or upload a .json file.",
+    "Convert → Master: normalizes your JSON into BooBly’s master template.",
+    "Edit: adjust fields (hair/eyes/freckles/makeup/framing/lighting/outfit).",
+    "Save Preset: stores JSON + image locally (works offline).",
+    "Optimize: choose model + use-case blocks; optionally merge JSON + prompts into one output.",
+    "Settings: import/export database, prompts, presets; set wallpaper; set LLM URL.",
   ];
+  const ol = el("ol", { style: "margin:0 0 0 18px; padding:0; line-height:1.6;" }, steps.map(s => el("li", { style:"margin:6px 0;" }, s)));
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Help — How to use BooBly"),
       el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
     ]),
     hr(),
-    el("div", { class: "small" }, steps.join("\n")),
+    ol,
   ]));
 }
 
@@ -656,7 +657,8 @@ function homePage() {
 
   const tiles = presets.map((p, idx) => {
     const img = el("img", { src: p.image || "icons/preset.png", alt: p.name });
-    const wrap = el("div", { class: idx === 0 ? "big" : "" }, [img]);
+    const cap = el("div", { class: "cap" }, p.name);
+    const wrap = el("div", { class: idx === 0 ? "big" : "" }, [img, cap]);
     wrap.addEventListener("click", () => { loadPreset(p); state.page = "edit"; persistDraft(); rerender(); });
     return wrap;
   });
@@ -753,9 +755,7 @@ function createPage() {
         el("div", { class: "small" }, "Import JSON"),
         hr(),
         el("div", { style: "font-weight:900;font-size:18px;margin-bottom:6px" }, "Import JSON code or upload a file."),
-        importCodeBtn,
-        el("div", { style: "height:10px" }, ""),
-        uploadBtn,
+        el("div", { class: "inlineRow" }, [importCodeBtn, uploadBtn]),
         upload,
       ]),
     ]),
@@ -779,7 +779,7 @@ function createPage() {
   const code = state.editableJson ? JSON.stringify(state.editableJson, null, 2) : (state.rawJsonText || "{\n}\n");
   const codeCard = codeBlock(code, async () => { await copyToClipboard(code); toast("Copied JSON"); });
 
-  const actions = el("div", { class: "row" }, [
+  const actions = el("div", { class: "btnRowTop" }, [
     el("button", { class: "btn", onclick: () => { state.rawJsonText = ""; state.parsedJson = null; state.editableJson = null; state.importError = null; state.correctedJsonText = null; persistDraft(); toast("Cleared"); rerender(); } }, "Clear"),
     el("button", { class: "btn", onclick: () => { state.editableJson = masterTemplate(); state.rawJsonText = JSON.stringify(state.editableJson, null, 2); persistDraft(); toast("Master template created"); rerender(); } }, "Create Master Template"),
     el("button", { class: "btn primary", onclick: () => {
@@ -897,6 +897,22 @@ function editPage() {
         el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("light") ? " primary" : ""), onclick: () => { setByPath(state.editableJson, ["subject","skin","freckles"], "light freckles"); rerender(); } }, "Light"),
         el("button", { class: "btn" + (/^none/i.test(getByPath(state.editableJson, ["subject","skin","freckles"], "")) ? " primary" : ""), onclick: () => { setByPath(state.editableJson, ["subject","skin","freckles"], "none"); rerender(); } }, "None"),
       ])),
+      hr(),
+
+      labelField("Makeup Level", (() => {
+        const cur = getByPath(state.editableJson, ["subject","eyes","makeup"], "subtle natural tones");
+        const set = (v) => { setByPath(state.editableJson, ["subject","eyes","makeup"], v); };
+        return el("div", { class: "seg" }, [
+          el("button", { class: cur.includes("natural") ? "active" : "", onclick: () => { set("subtle natural tones"); } }, "Natural"),
+          el("button", { class: cur.includes("medium") ? "active" : "", onclick: () => { set("medium glam makeup"); } }, "Medium"),
+          el("button", { class: cur.includes("glam") ? "active" : "", onclick: () => { set("glam makeup"); } }, "Glam"),
+        ]);
+      })()),
+      labelField("Framing", selectFromDb("composition.framing", getByPath(state.editableJson, ["composition","framing"], ""), (v) => { setByPath(state.editableJson, ["composition","framing"], v); })),
+      labelField("Lighting", selectFromDb("image_metadata.lighting.type", getByPath(state.editableJson, ["image_metadata","lighting","type"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","lighting","type"], v); })),
+      labelField("Environment", inputText(getByPath(state.editableJson, ["image_metadata","environment","location"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","environment","location"], v); })),
+      labelField("Outfit Type", selectFromDb("clothing.outfit_type", getByPath(state.editableJson, ["clothing","outfit_type"], ""), (v) => { setByPath(state.editableJson, ["clothing","outfit_type"], v); })),
+
       hr(),
       el("div", { class: "row" }, [
         el("button", { class: "btn", onclick: async () => { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); } }, "Copy JSON"),
@@ -1095,7 +1111,7 @@ function settingsPage() {
       hr(),
       el("div", { class: "small", style: "font-weight:900" }, "LLM Integration"),
       llmUrl,
-      el("div", { class: "row" }, [el("div", { class: "small" }, "Open LLM URL on Generate"), el("div", { style: "flex:0" }, openToggle)]),
+      el("div", { class: "settingsRow" }, [el("div", { class: "small" }, "Open LLM URL on Generate"), el("div", { style: "flex:0" }, openToggle)]),
       hr(),
       el("div", { class: "row" }, [helpBtn, presetsBtn, changelogBtn]),
       el("div", { class: "small" }, `Version ${VERSION}`),

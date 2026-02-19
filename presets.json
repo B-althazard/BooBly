@@ -1,7 +1,7 @@
 [
   {
     "id": "40801665-0a66-48f0-931d-ad94679e6545",
-    "name": "Preset 01",
+    "name": "Beach Selfie \u2014 Golden Hour",
     "created": 0,
     "json": {
       "subject": {
@@ -65,8 +65,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "tropical beach shoreline",
+          "time_of_day": "late afternoon golden hour",
           "sky": {
             "color": "",
             "clouds": ""
@@ -105,7 +105,7 @@
         "material_appearance": "stretch fabric"
       },
       "composition": {
-        "framing": "full body",
+        "framing": "mid-thigh to head",
         "subject_position": "centered",
         "camera_angle": "slight high angle (camera slightly above, tilted down)",
         "lens_type": "portrait lens",
@@ -139,7 +139,7 @@
   },
   {
     "id": "2048b11a-90d3-4a0a-888d-d44c498d8eb7",
-    "name": "Preset 02",
+    "name": "Old Town Street \u2014 Fashion Walk",
     "created": 0,
     "json": {
       "subject": {
@@ -156,7 +156,7 @@
           "bust": "full"
         },
         "hair": {
-          "color": "golden blonde",
+          "color": "dark brunette",
           "length": "long",
           "style": "wavy",
           "motion": "subtle hair movement"
@@ -166,10 +166,10 @@
           "texture": "micro skin texture",
           "finish": "natural",
           "water_droplets": false,
-          "freckles": "heavy freckles"
+          "freckles": "light freckles"
         },
         "eyes": {
-          "color": "bright blue",
+          "color": "hazel",
           "makeup": "subtle natural tones"
         },
         "pose": {
@@ -193,7 +193,7 @@
         "aspect_ratio": "4:5",
         "orientation": "portrait",
         "lighting": {
-          "type": "natural soft daylight",
+          "type": "golden hour sunlight",
           "direction": "\u00be front",
           "intensity": "soft",
           "color_temperature": "neutral",
@@ -203,8 +203,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "old town street",
+          "time_of_day": "late afternoon golden hour",
           "sky": {
             "color": "",
             "clouds": ""
@@ -217,13 +217,13 @@
           },
           "background_elements": [],
           "depth_of_field": "shallow depth of field",
-          "background_blur": "medium bokeh"
+          "background_blur": "strong bokeh"
         }
       },
       "clothing": {
-        "outfit_type": "athleisure set",
+        "outfit_type": "street casual",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "white fitted tank top",
           "pattern": "solid with accents",
           "colors": [
             "white",
@@ -232,7 +232,7 @@
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "denim short shorts",
           "cut": "high-rise",
           "pattern": "matching solid with accents",
           "side_straps": ""
@@ -277,7 +277,7 @@
   },
   {
     "id": "a4f71ff0-2a92-4317-91e6-e1634c89669f",
-    "name": "Preset 03",
+    "name": "Beach Close-up \u2014 Soft Daylight",
     "created": 0,
     "json": {
       "subject": {
@@ -294,7 +294,7 @@
           "bust": "full"
         },
         "hair": {
-          "color": "golden blonde",
+          "color": "light brown with golden highlights",
           "length": "long",
           "style": "wavy",
           "motion": "subtle hair movement"
@@ -307,7 +307,7 @@
           "freckles": "heavy freckles"
         },
         "eyes": {
-          "color": "bright blue",
+          "color": "blue-gray",
           "makeup": "subtle natural tones"
         },
         "pose": {
@@ -341,8 +341,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "beach shoreline",
+          "time_of_day": "midday",
           "sky": {
             "color": "",
             "clouds": ""
@@ -361,7 +361,7 @@
       "clothing": {
         "outfit_type": "athleisure set",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "ribbed gray tank",
           "pattern": "solid with accents",
           "colors": [
             "white",
@@ -370,7 +370,7 @@
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "black sport shorts",
           "cut": "high-rise",
           "pattern": "matching solid with accents",
           "side_straps": ""
@@ -381,7 +381,7 @@
         "material_appearance": "stretch fabric"
       },
       "composition": {
-        "framing": "full body",
+        "framing": "close portrait",
         "subject_position": "centered",
         "camera_angle": "slight high angle (camera slightly above, tilted down)",
         "lens_type": "portrait lens",
@@ -415,7 +415,7 @@
   },
   {
     "id": "c0a950f8-9d17-44df-897f-3ee67cd51dd4",
-    "name": "Preset 04",
+    "name": "Ocean Splash \u2014 Sunlit",
     "created": 0,
     "json": {
       "subject": {
@@ -432,7 +432,7 @@
           "bust": "full"
         },
         "hair": {
-          "color": "golden blonde",
+          "color": "light brown with golden highlights",
           "length": "long",
           "style": "wavy",
           "motion": "subtle hair movement"
@@ -445,7 +445,7 @@
           "freckles": "heavy freckles"
         },
         "eyes": {
-          "color": "bright blue",
+          "color": "blue-gray",
           "makeup": "subtle natural tones"
         },
         "pose": {
@@ -479,8 +479,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "open ocean shallows",
+          "time_of_day": "sunny afternoon",
           "sky": {
             "color": "",
             "clouds": ""
@@ -499,7 +499,7 @@
       "clothing": {
         "outfit_type": "athleisure set",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "ribbed gray tank",
           "pattern": "solid with accents",
           "colors": [
             "white",
@@ -508,7 +508,7 @@
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "black sport shorts",
           "cut": "high-rise",
           "pattern": "matching solid with accents",
           "side_straps": ""
@@ -519,7 +519,7 @@
         "material_appearance": "stretch fabric"
       },
       "composition": {
-        "framing": "full body",
+        "framing": "close portrait",
         "subject_position": "centered",
         "camera_angle": "slight high angle (camera slightly above, tilted down)",
         "lens_type": "portrait lens",
@@ -553,7 +553,7 @@
   },
   {
     "id": "6233d87e-12ee-480f-a388-03df4377afba",
-    "name": "Preset 05",
+    "name": "Bathroom Mirror \u2014 Indoor Softbox",
     "created": 0,
     "json": {
       "subject": {
@@ -617,8 +617,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "bathroom interior",
+          "time_of_day": "indoor evening",
           "sky": {
             "color": "",
             "clouds": ""
@@ -635,9 +635,9 @@
         }
       },
       "clothing": {
-        "outfit_type": "athleisure set",
+        "outfit_type": "cozy casual",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "soft knit cardigan",
           "pattern": "solid with accents",
           "colors": [
             "white",
@@ -646,7 +646,7 @@
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "denim short shorts",
           "cut": "high-rise",
           "pattern": "matching solid with accents",
           "side_straps": ""
@@ -657,7 +657,7 @@
         "material_appearance": "stretch fabric"
       },
       "composition": {
-        "framing": "full body",
+        "framing": "close portrait",
         "subject_position": "centered",
         "camera_angle": "slight high angle (camera slightly above, tilted down)",
         "lens_type": "portrait lens",
@@ -691,7 +691,7 @@
   },
   {
     "id": "9d1d7146-74ec-428a-aa47-d7de5bf98e78",
-    "name": "Preset 06",
+    "name": "Mountain Camp \u2014 Autumn Trail",
     "created": 0,
     "json": {
       "subject": {
@@ -708,7 +708,7 @@
           "bust": "full"
         },
         "hair": {
-          "color": "golden blonde",
+          "color": "copper red",
           "length": "long",
           "style": "wavy",
           "motion": "subtle hair movement"
@@ -721,7 +721,7 @@
           "freckles": "heavy freckles"
         },
         "eyes": {
-          "color": "bright blue",
+          "color": "blue-green",
           "makeup": "subtle natural tones"
         },
         "pose": {
@@ -745,7 +745,7 @@
         "aspect_ratio": "4:5",
         "orientation": "portrait",
         "lighting": {
-          "type": "natural soft daylight",
+          "type": "soft overcast daylight",
           "direction": "\u00be front",
           "intensity": "soft",
           "color_temperature": "neutral",
@@ -755,8 +755,8 @@
           ]
         },
         "environment": {
-          "location": "",
-          "time_of_day": "golden hour",
+          "location": "mountain lakeside camp",
+          "time_of_day": "overcast afternoon",
           "sky": {
             "color": "",
             "clouds": ""
@@ -773,9 +773,9 @@
         }
       },
       "clothing": {
-        "outfit_type": "athleisure set",
+        "outfit_type": "outdoor adventure",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "leather lace-up crop top",
           "pattern": "solid with accents",
           "colors": [
             "white",
@@ -784,7 +784,7 @@
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "rust short shorts",
           "cut": "high-rise",
           "pattern": "matching solid with accents",
           "side_straps": ""
@@ -829,7 +829,7 @@
   },
   {
     "id": "13aa1981-5027-44ec-be37-cfe08a0c3ec9",
-    "name": "Preset 07",
+    "name": "Tropical Bikini \u2014 Shoreline",
     "created": 0,
     "json": {
       "subject": {
@@ -856,10 +856,10 @@
           "texture": "micro skin texture",
           "finish": "natural",
           "water_droplets": false,
-          "freckles": "heavy freckles"
+          "freckles": "light freckles"
         },
         "eyes": {
-          "color": "bright blue",
+          "color": "hazel-brown",
           "makeup": "subtle natural tones"
         },
         "pose": {
@@ -883,7 +883,7 @@
         "aspect_ratio": "4:5",
         "orientation": "portrait",
         "lighting": {
-          "type": "natural soft daylight",
+          "type": "warm golden sunlight",
           "direction": "\u00be front",
           "intensity": "soft",
           "color_temperature": "neutral",
@@ -893,7 +893,7 @@
           ]
         },
         "environment": {
-          "location": "",
+          "location": "tropical beach shoreline",
           "time_of_day": "golden hour",
           "sky": {
             "color": "",
@@ -911,20 +911,22 @@
         }
       },
       "clothing": {
-        "outfit_type": "athleisure set",
+        "outfit_type": "bikini",
         "top": {
-          "style": "elastic shape-adapting mini crop top",
+          "style": "triangle bikini top",
           "pattern": "solid with accents",
           "colors": [
-            "white",
-            "pastel pink"
+            "pink",
+            "turquoise",
+            "yellow",
+            "orange"
           ],
           "straps": ""
         },
         "bottom": {
-          "style": "short shorts",
+          "style": "string bikini bottom",
           "cut": "high-rise",
-          "pattern": "matching solid with accents",
+          "pattern": "matching multicolor gradient",
           "side_straps": ""
         },
         "socks": "over-the-knee socks",
