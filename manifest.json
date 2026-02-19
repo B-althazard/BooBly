@@ -1,7 +1,7 @@
 {
   "name": "BooBly",
   "short_name": "BooBly",
-  "start_url": "./?v=1.2.4",
+  "start_url": "./?v=1.2.6",
   "display": "standalone",
   "background_color": "#eeeeee",
   "theme_color": "#ff57c6",

@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.4";
+const VERSION = "1.2.6";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -363,6 +363,12 @@ function codeBlock(jsonText, onCopy) {
     el("button", { class: "codeCopy", onclick: onCopy, title: "Copy" }, "⧉"),
     el("div", { html: highlightJsonToHtml(jsonText) }),
   ]);
+}
+
+function currentPreset() {
+  const pid = state.currentPresetId;
+  if (!pid) return null;
+  return presetsList().find(p => p.id === pid) || null;
 }
 
 function presetsList() {
@@ -903,15 +909,15 @@ function editPage() {
         const cur = getByPath(state.editableJson, ["subject","eyes","makeup"], "subtle natural tones");
         const set = (v) => { setByPath(state.editableJson, ["subject","eyes","makeup"], v); };
         return el("div", { class: "seg" }, [
-          el("button", { class: cur.includes("natural") ? "active" : "", onclick: () => { set("subtle natural tones"); } }, "Natural"),
-          el("button", { class: cur.includes("medium") ? "active" : "", onclick: () => { set("medium glam makeup"); } }, "Medium"),
-          el("button", { class: cur.includes("glam") ? "active" : "", onclick: () => { set("glam makeup"); } }, "Glam"),
+          el("button", { class: cur.toLowerCase().includes("natural") ? "active" : "", onclick: () => { set("subtle natural tones"); persistDraft(); rerender(); } }, "Natural"),
+          el("button", { class: cur.toLowerCase().includes("medium") ? "active" : "", onclick: () => { set("medium glam makeup"); persistDraft(); rerender(); } }, "Medium"),
+          el("button", { class: cur.toLowerCase().includes("glam") ? "active" : "", onclick: () => { set("glam makeup"); persistDraft(); rerender(); } }, "Glam"),
         ]);
       })()),
-      labelField("Framing", selectFromDb("composition.framing", getByPath(state.editableJson, ["composition","framing"], ""), (v) => { setByPath(state.editableJson, ["composition","framing"], v); })),
-      labelField("Lighting", selectFromDb("image_metadata.lighting.type", getByPath(state.editableJson, ["image_metadata","lighting","type"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","lighting","type"], v); })),
-      labelField("Environment", inputText(getByPath(state.editableJson, ["image_metadata","environment","location"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","environment","location"], v); })),
-      labelField("Outfit Type", selectFromDb("clothing.outfit_type", getByPath(state.editableJson, ["clothing","outfit_type"], ""), (v) => { setByPath(state.editableJson, ["clothing","outfit_type"], v); })),
+      labelField("Framing", selectFromDb("composition.framing", getByPath(state.editableJson, ["composition","framing"], ""), (v) => { setByPath(state.editableJson, ["composition","framing"], v); persistDraft(); rerender(); })),
+      labelField("Lighting", selectFromDb("image_metadata.lighting.type", getByPath(state.editableJson, ["image_metadata","lighting","type"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","lighting","type"], v); persistDraft(); rerender(); })),
+      labelField("Environment", selectFromDb("image_metadata.environment.location", getByPath(state.editableJson, ["image_metadata","environment","location"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","environment","location"], v); persistDraft(); rerender(); })),
+      labelField("Outfit Type", selectFromDb("clothing.outfit_type", getByPath(state.editableJson, ["clothing","outfit_type"], ""), (v) => { setByPath(state.editableJson, ["clothing","outfit_type"], v); persistDraft(); rerender(); })),
 
       hr(),
       el("div", { class: "row" }, [
