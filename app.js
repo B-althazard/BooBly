@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.6";
+const VERSION = "1.2.7";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -717,7 +717,7 @@ function trKV(key, value, hasSwitch = false, switchOn = false, onToggle = null) 
 }
 
 function createPage() {
-  const presetsBtn = el("button", { class: "btn primary", onclick: () => openPresetPicker() }, "Choose Preset");
+  const presetsBtn = el("button", { class: "btn primary full", onclick: () => openPresetPicker() }, "Choose Preset");
   const importCodeBtn = el("button", { class: "btn soft", onclick: () => openImportModal() }, "{}  Import Code");
 
   const upload = el("input", {
@@ -899,9 +899,9 @@ function editPage() {
       labelField("Hair Style", selectFromDb("subject.hair.style", getByPath(state.editableJson, ["subject","hair","style"], ""), (v) => { setByPath(state.editableJson, ["subject","hair","style"], v); })),
       labelField("Eye Color", selectFromDb("subject.eyes.color", getByPath(state.editableJson, ["subject","eyes","color"], ""), (v) => { setByPath(state.editableJson, ["subject","eyes","color"], v); })),
       labelField("Freckles", el("div", { class: "row" }, [
-        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("heavy") ? " primary" : ""), onclick: () => { setByPath(state.editableJson, ["subject","skin","freckles"], "heavy freckles"); rerender(); } }, "Heavy"),
-        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("light") ? " primary" : ""), onclick: () => { setByPath(state.editableJson, ["subject","skin","freckles"], "light freckles"); rerender(); } }, "Light"),
-        el("button", { class: "btn" + (/^none/i.test(getByPath(state.editableJson, ["subject","skin","freckles"], "")) ? " primary" : ""), onclick: () => { setByPath(state.editableJson, ["subject","skin","freckles"], "none"); rerender(); } }, "None"),
+        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("heavy") ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "heavy freckles"); rerender(); } }, "Heavy"),
+        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("light") ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "light freckles"); rerender(); } }, "Light"),
+        el("button", { class: "btn" + (/^none/i.test(getByPath(state.editableJson, ["subject","skin","freckles"], "")) ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "none"); rerender(); } }, "None"),
       ])),
       hr(),
 
@@ -909,9 +909,9 @@ function editPage() {
         const cur = getByPath(state.editableJson, ["subject","eyes","makeup"], "subtle natural tones");
         const set = (v) => { setByPath(state.editableJson, ["subject","eyes","makeup"], v); };
         return el("div", { class: "seg" }, [
-          el("button", { class: cur.toLowerCase().includes("natural") ? "active" : "", onclick: () => { set("subtle natural tones"); persistDraft(); rerender(); } }, "Natural"),
-          el("button", { class: cur.toLowerCase().includes("medium") ? "active" : "", onclick: () => { set("medium glam makeup"); persistDraft(); rerender(); } }, "Medium"),
-          el("button", { class: cur.toLowerCase().includes("glam") ? "active" : "", onclick: () => { set("glam makeup"); persistDraft(); rerender(); } }, "Glam"),
+          el("button", { class: cur.toLowerCase().includes("natural") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("subtle natural tones"); rerender(); } }, "Natural"),
+          el("button", { class: cur.toLowerCase().includes("medium") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("medium glam makeup"); rerender(); } }, "Medium"),
+          el("button", { class: cur.toLowerCase().includes("glam") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("glam makeup"); rerender(); } }, "Glam"),
         ]);
       })()),
       labelField("Framing", selectFromDb("composition.framing", getByPath(state.editableJson, ["composition","framing"], ""), (v) => { setByPath(state.editableJson, ["composition","framing"], v); persistDraft(); rerender(); })),

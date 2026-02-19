@@ -378,3 +378,8 @@ textarea{min-height:160px; font-family:var(--mono); font-size:12px; line-height:
 /* Settings: keep toggle inside card */
 .settingsRow{display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap;}
 .settingsRow .small{margin:0;}
+
+
+.btn.full{width:100%;}
+
+.btn{min-height:44px;}
