@@ -285,3 +285,73 @@ textarea{min-height:160px; font-family:var(--mono); font-size:12px; line-height:
 .tok-num{color:#ffd08a;}
 .tok-bool{color:#b7f0c0;}
 .tok-null{color:#ffb4b4;}
+
+/* v1.2.2 additions */
+/* v1.2.2 additions */
+
+/* Fix dark mode icon contrast */
+[data-theme="dark"] .iconBtn{
+  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+}
+[data-theme="dark"] .header .iconBtn{
+  box-shadow: 0 10px 20px rgba(0,0,0,.30);
+}
+
+/* Home gallery layout: 1 big + 6 small */
+.homeGallery{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.homeGallery .big{
+  grid-column: 1 / -1;
+}
+.homeGallery img{
+  width:100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 18px;
+  display:block;
+}
+
+/* Create: force stacking for top blocks */
+.stackCol{
+  display:flex;
+  flex-direction:column;
+  gap: 14px;
+}
+@media (min-width: 720px){
+  .stackCol{gap:16px;}
+}
+
+/* Expandable summary */
+.kvWrap{position:relative;}
+.kvCollapsed{
+  max-height: 360px;
+  overflow:hidden;
+}
+.kvFade{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height: 46px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.06));
+  pointer-events:none;
+  border-bottom-left-radius:16px;
+  border-bottom-right-radius:16px;
+}
+[data-theme="dark"] .kvFade{
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(255,255,255,.06));
+}
+
+/* Create: action buttons above code console */
+.btnRowTop{display:flex; gap:10px; flex-wrap:wrap;}
+.btnRowTop .btn{flex:1; min-width: 140px;}
+
+/* Edit: clickable image */
+.clickableImg{cursor:pointer;}
+
+/* Slightly better contrast on table labels */
+.kvKey{opacity:.78;}
+[data-theme="dark"] .kvKey{opacity:.82;}

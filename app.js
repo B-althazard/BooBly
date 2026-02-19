@@ -24,6 +24,8 @@ const state = {
 
   selectedModelPromptId: "gpt52_image_prompt_compiler_v1",
   optimizeTab: "portrait", // portrait | fashion | fitness
+  createJsonExpanded: false,
+  currentPresetId: null,
 };
 
 const STORAGE = {
@@ -38,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.1";
+const VERSION = "1.2.2";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -352,8 +354,11 @@ function presetsList() {
 }
 function savePreset(name, jsonObj) {
   const presets = presetsList();
-  presets.unshift({ id: crypto.randomUUID(), name, created: Date.now(), json: jsonObj, image: null });
+  const id = crypto.randomUUID();
+  presets.unshift({ id, name, created: Date.now(), json: jsonObj, image: null });
   saveLS(STORAGE.presets, presets);
+  state.currentPresetId = id;
+  return id;
 }
 function updatePresetImage(presetId, dataUrl) {
   const presets = presetsList();
@@ -617,6 +622,7 @@ function openImportModal() {
 --------------------------- */
 function loadPreset(preset) {
   state.parsedJson = preset.json;
+  state.currentPresetId = preset.id || null;
   state.editableJson = JSON.parse(JSON.stringify(preset.json));
   state.rawJsonText = JSON.stringify(preset.json, null, 2);
   state.importError = null;
@@ -625,22 +631,23 @@ function loadPreset(preset) {
 }
 
 function homePage() {
-  const presets = presetsList().slice(0, 4);
-  const grid = presets.length
-    ? el("div", { class: "presetGrid" }, presets.map((p) => presetTile(p, () => { loadPreset(p); state.page = "edit"; persistDraft(); rerender(); })))
-    : el("div", { class: "small" }, "No presets yet. Create one from Create → Save Preset.");
+  const presets = presetsList().slice(0, 7);
+  if (!presets.length) {
+    return el("div", { class: "screen" }, [
+      card("Most Recent", [el("div", { class: "small" }, "No presets yet. Use Create → Import or preset.")]),
+    ]);
+  }
 
-  return el("div", { class: "screen" }, [
-    el("div", { class: "card" }, [
-      el("div", { class: "cardBody" }, [
-        el("div", { class: "small" }, "Most Recent"),
-        hr(),
-        grid,
-        hr(),
-        el("button", { class: "btn", onclick: () => { state.page = "create"; persistDraft(); rerender(); } }, "Create New"),
-      ]),
-    ]),
-  ]);
+  const tiles = presets.map((p, idx) => {
+    const img = el("img", { src: p.image || "icons/preset.png", alt: p.name });
+    const wrap = el("div", { class: idx === 0 ? "big" : "" }, [img]);
+    wrap.addEventListener("click", () => { loadPreset(p); state.page = "edit"; persistDraft(); rerender(); });
+    return wrap;
+  });
+
+  const gallery = el("div", { class: "homeGallery" }, tiles);
+
+  return el("div", { class: "screen" }, [gallery]);
 }
 
 function getByPath(obj, pathArr, fallback = "") {
@@ -716,7 +723,7 @@ function createPage() {
   });
   const uploadBtn = el("button", { class: "btn soft", onclick: () => upload.click() }, "☁  Upload File");
 
-  const topCards = el("div", { class: "row" }, [
+  const topCards = el("div", { class: "stackCol" }, [
     el("div", { class: "card" }, [
       el("div", { class: "cardBody" }, [
         el("div", { class: "small" }, "Select Preset"),
@@ -747,7 +754,7 @@ function createPage() {
     trKV("Hair Style", view.hairStyle),
     trKV("Eye Color", view.eyeColor),
     trKV("Freckles", view.freckles),
-    trKV("Framing", view.framing),
+    trKV("Framing", (view.framing || "").replace("full body","Full-body").replace("full body shot","Full-body shot") || view.framing),
     trKV("Lighting", view.lightingType),
     trKV("Environment", view.environment),
     trKV("Outfit", view.outfit),
@@ -777,13 +784,22 @@ function createPage() {
 
   return el("div", { class: "screen" }, [
     topCards,
-    card("JSON Data", [jsonTable]),
+    card("JSON Data", [
+      el("div", { class: "row" }, [
+        el("button", { class: "btn", onclick: () => { state.createJsonExpanded = !state.createJsonExpanded; persistDraft(); rerender(); } }, state.createJsonExpanded ? "Collapse" : "Expand"),
+      ]),
+      hr(),
+      el("div", { class: "kvWrap" }, [
+        el("div", { class: "kvHost" + (state.createJsonExpanded ? "" : " kvCollapsed") }, [jsonTable]),
+        state.createJsonExpanded ? null : el("div", { class: "kvFade" }, ""),
+      ].filter(Boolean)),
+    ]),
     card("JSON Code", [
       el("div", { class: "small" }, "Master template format (line numbers + highlight)."),
       hr(),
-      codeCard,
-      hr(),
       actions,
+      hr(),
+      codeCard,
     ]),
     consoleNode,
   ].filter(Boolean));
@@ -827,9 +843,34 @@ function editPage() {
 
   const content = el("div", { class: "card" }, [
     el("div", { class: "cardBody" }, [
-      el("img", { src: previewImg, alt: "Preview", style: "width:100%;height:220px;object-fit:cover;border-radius:18px;display:block;" }),
+      (() => {
+        const file = el("input", { type:"file", accept:"image/*", style:"display:none" });
+        file.addEventListener("change", async (e) => {
+          const f = e.target.files?.[0];
+          if (!f) return;
+          const dataUrl = await new Promise((res) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result);
+            r.readAsDataURL(f);
+          });
+          // update current preset image if known; else match by name
+          const presets = presetsList();
+          const pid = state.currentPresetId;
+          if (pid) updatePresetImage(pid, dataUrl);
+          else {
+            const name = getByPath(state.editableJson, ["subject","identity","name"], "");
+            const p = presets.find((x) => x.name === name);
+            if (p) updatePresetImage(p.id, dataUrl);
+          }
+          toast("Preset image set");
+          rerender();
+        });
+        const img = el("img", { src: previewImg, alt:"Preview", class:"clickableImg", style:"width:100%;height:220px;object-fit:cover;border-radius:18px;display:block;" });
+        img.addEventListener("click", () => file.click());
+        return el("div", {}, [img, file]);
+      })(),
       hr(),
-      labelField("Name", inputText(view.name, (v) => { setByPath(state.editableJson, ["subject", "identity", "name"], v); rerender(); })),
+      labelField("Name", inputText(view.name, (v) => { setByPath(state.editableJson, ["subject", "identity", "name"], v); })),
       labelField("Gender", el("input", { type:"text", value:"Female", disabled:"true" })),
       labelField("Height (cm)", inputText(String(view.height || 155), (v) => { const n = Number(v); if (!Number.isNaN(n)) setByPath(state.editableJson, ["subject","identity","height_cm"], n); })),
       labelField("Hair Color", selectFromDb("subject.hair.color", getByPath(state.editableJson, ["subject","hair","color"], ""), (v) => { setByPath(state.editableJson, ["subject","hair","color"], v); })),
@@ -894,10 +935,10 @@ function optimizePage() {
   const output = buildOptimizerOutput();
 
   const toggles = el("div", { class: "row" }, [
-    el("div", {}, [el("div", { class: "small" }, "JSON"), switchPill(state.addJsonOutput, () => { state.addJsonOutput = !state.addJsonOutput; persistDraft(); rerender(); })]),
     el("div", {}, [el("div", { class: "small" }, "Master"), switchPill(state.addMasterPrompt, () => { state.addMasterPrompt = !state.addMasterPrompt; persistDraft(); rerender(); })]),
     el("div", {}, [el("div", { class: "small" }, "Model"), switchPill(state.addModelPrompt, () => { state.addModelPrompt = !state.addModelPrompt; persistDraft(); rerender(); })]),
     el("div", {}, [el("div", { class: "small" }, "Use-case"), switchPill(state.addUseCasePrompt, () => { state.addUseCasePrompt = !state.addUseCasePrompt; persistDraft(); rerender(); })]),
+    el("div", {}, [el("div", { class: "small" }, "JSON"), switchPill(state.addJsonOutput, () => { state.addJsonOutput = !state.addJsonOutput; persistDraft(); rerender(); })]),
   ]);
 
   const copyBtn = el("button", { class: "btn primary", onclick: async () => { await copyToClipboard(output); toast("Copied output"); } }, "Copy Output");
