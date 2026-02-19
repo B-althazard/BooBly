@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.2";
+const VERSION = "1.2.3";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -84,6 +84,22 @@ const setWallpaper = (dataUrl) => {
   saveLS(STORAGE.wallpaper, dataUrl);
 };
 
+
+async function fetchText(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error("Failed to load " + path);
+  return await r.text();
+}
+async function seedPresetsIfEmpty() {
+  const existing = loadLS(STORAGE.presets, []);
+  if (existing && existing.length) return;
+  try {
+    const presetData = await fetchJson("presets.json");
+    if (Array.isArray(presetData) && presetData.length) {
+      saveLS(STORAGE.presets, presetData);
+    }
+  } catch {}
+}
 async function fetchJson(path) {
   const r = await fetch(path);
   if (!r.ok) throw new Error("Failed to load " + path);
@@ -1133,6 +1149,8 @@ async function init() {
   }
   const lastPage = loadLS(STORAGE.page, "home");
   if (lastPage) state.page = lastPage;
+
+  await seedPresetsIfEmpty();
 
   // PWA
   if ("serviceWorker" in navigator) {

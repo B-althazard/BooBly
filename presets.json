@@ -1,0 +1,968 @@
+[
+  {
+    "id": "40801665-0a66-48f0-931d-ad94679e6545",
+    "name": "Preset 01",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 01",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_01.png"
+  },
+  {
+    "id": "2048b11a-90d3-4a0a-888d-d44c498d8eb7",
+    "name": "Preset 02",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 02",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_02.png"
+  },
+  {
+    "id": "a4f71ff0-2a92-4317-91e6-e1634c89669f",
+    "name": "Preset 03",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 03",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_03.png"
+  },
+  {
+    "id": "c0a950f8-9d17-44df-897f-3ee67cd51dd4",
+    "name": "Preset 04",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 04",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_04.png"
+  },
+  {
+    "id": "6233d87e-12ee-480f-a388-03df4377afba",
+    "name": "Preset 05",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 05",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_05.png"
+  },
+  {
+    "id": "9d1d7146-74ec-428a-aa47-d7de5bf98e78",
+    "name": "Preset 06",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 06",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_06.png"
+  },
+  {
+    "id": "13aa1981-5027-44ec-be37-cfe08a0c3ec9",
+    "name": "Preset 07",
+    "created": 0,
+    "json": {
+      "subject": {
+        "category": "human",
+        "gender_presentation": "female",
+        "age_range": "21",
+        "identity": {
+          "name": "Preset 07",
+          "height_cm": 155
+        },
+        "body": {
+          "build": "athletic",
+          "silhouette": "curvy",
+          "bust": "full"
+        },
+        "hair": {
+          "color": "golden blonde",
+          "length": "long",
+          "style": "wavy",
+          "motion": "subtle hair movement"
+        },
+        "skin": {
+          "tone": "fair",
+          "texture": "micro skin texture",
+          "finish": "natural",
+          "water_droplets": false,
+          "freckles": "heavy freckles"
+        },
+        "eyes": {
+          "color": "bright blue",
+          "makeup": "subtle natural tones"
+        },
+        "pose": {
+          "stance": "standing",
+          "body_angle": "\u00be angle",
+          "torso": "upright",
+          "head": "forward",
+          "arms": "relaxed beside torso",
+          "movement": "standing"
+        },
+        "expression": {
+          "emotion": "calm",
+          "mouth": "soft smile",
+          "eyes": "engaged toward camera"
+        },
+        "accessories": []
+      },
+      "image_metadata": {
+        "type": "photorealistic_image",
+        "style": "ultra-realistic, high-resolution, professional photography",
+        "aspect_ratio": "4:5",
+        "orientation": "portrait",
+        "lighting": {
+          "type": "natural soft daylight",
+          "direction": "\u00be front",
+          "intensity": "soft",
+          "color_temperature": "neutral",
+          "effects": [
+            "soft highlights",
+            "feathered shadows"
+          ]
+        },
+        "environment": {
+          "location": "",
+          "time_of_day": "golden hour",
+          "sky": {
+            "color": "",
+            "clouds": ""
+          },
+          "water": {
+            "color": "",
+            "clarity": "",
+            "surface": "",
+            "motion": ""
+          },
+          "background_elements": [],
+          "depth_of_field": "shallow depth of field",
+          "background_blur": "medium bokeh"
+        }
+      },
+      "clothing": {
+        "outfit_type": "athleisure set",
+        "top": {
+          "style": "elastic shape-adapting mini crop top",
+          "pattern": "solid with accents",
+          "colors": [
+            "white",
+            "pastel pink"
+          ],
+          "straps": ""
+        },
+        "bottom": {
+          "style": "short shorts",
+          "cut": "high-rise",
+          "pattern": "matching solid with accents",
+          "side_straps": ""
+        },
+        "socks": "over-the-knee socks",
+        "shoes": "",
+        "accessories": [],
+        "material_appearance": "stretch fabric"
+      },
+      "composition": {
+        "framing": "full body",
+        "subject_position": "centered",
+        "camera_angle": "slight high angle (camera slightly above, tilted down)",
+        "lens_type": "portrait lens",
+        "focal_length_equivalent": "85mm",
+        "focus_point": "eyes/face",
+        "sharpness": "subject sharp"
+      },
+      "effects": {
+        "bokeh": {
+          "background": true,
+          "size": "medium",
+          "shape": "circular"
+        },
+        "color_grading": {
+          "contrast": "balanced",
+          "saturation": "natural",
+          "tones": "neutral grade"
+        }
+      },
+      "rendering_parameters": {
+        "quality": "ultra",
+        "detail_level": "maximum",
+        "realism": "photographic",
+        "noise": "clean",
+        "artifacts": "none",
+        "dynamic_range": "high",
+        "texture_detail": "high fidelity"
+      }
+    },
+    "image": "assets/presets/preset_07.png"
+  }
+]
