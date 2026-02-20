@@ -1,4 +1,4 @@
-// BooBly v1_3_0 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
+// BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
 
 const state = {
   db: null,
@@ -45,6 +45,21 @@ const state = {
   exportPrefix: "",
   exportSuffix: "",
 };
+
+// Guided policy enforcement: optionally exclude freeform controls at runtime.
+function isGuidedField(master, f) {
+  if (!f) return false;
+  const modes = (f.visibility?.modes || []);
+  if (!modes.includes("guided")) return false;
+  const policy = master?.ui?.guided_policy;
+  if (policy?.allow_freeform === false) {
+    const allowed = policy.guided_allowed_controls || [];
+    const kind = f.control?.kind;
+    return allowed.includes(kind);
+  }
+  return true;
+}
+
 
 const STORAGE = {
   theme: "boobly.theme",
@@ -2366,7 +2381,7 @@ async function init() {
 
   // Master file (Option A) — drives Guided/Expert editor.
   const mLS = loadLS(STORAGE.master, null);
-  state.master = mLS || (await fetchJson("master_file_v1_3_0.json").catch(() => null));
+  state.master = mLS || (await fetchJson("master_file_v1_3_1.json").catch(() => null));
   if (state.master) saveLS(STORAGE.master, state.master);
 
   const clLS = loadLS(STORAGE.changelog, null);

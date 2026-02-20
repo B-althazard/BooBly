@@ -3,6 +3,17 @@
   "schema": 1,
   "entries": [
     {
+      "version": "1_4_0_Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "Guided mode now forbids all freeform text inputs (no inline inputs/textareas).",
+        "Converted prior freeform Guided fields (environment, composition, effects, mood, negatives, pose, action, hair style, outfit) to controlled pickers backed by master-file vocab lists.",
+        "Added master-file guided_policy: allow_freeform=false and guided_allowed_controls.",
+        "Expanded vocab scaffolds for environments, composition styles, effects, moods, poses, actions, hair styles, outfits, negative presets.",
+        "Any remaining freeform controls are Expert-only."
+      ]
+    },
+    {
       "version": "1.4.0_Alpha",
       "date": "2026-02-20",
       "changes": [
