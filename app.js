@@ -16,6 +16,13 @@ const state = {
   theme: "light",
   wallpaper: null,
 
+  // Imported JSON baseline (for Default option in editor)
+  originalJson: null,
+
+  // Generic key editor
+  keySearch: "",
+  keyEditorExpanded: {},
+
   // Optimizer output composition
   addMasterPrompt: true,
   addModelPrompt: true,
@@ -41,7 +48,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "v1_2_8_HOTFIX-1";
+const VERSION = "v1_2_8_HOTFIX-2";
 
 
 /* --------------------------
@@ -171,6 +178,9 @@ function persistDraftNow() {
     addJsonOutput: state.addJsonOutput,
     currentPresetId: state.currentPresetId,
     createJsonExpanded: state.createJsonExpanded,
+    originalJson: state.originalJson,
+    keySearch: state.keySearch,
+    keyEditorExpanded: state.keyEditorExpanded,
   };
   saveLS(STORAGE.draft, payload);
   saveLS(STORAGE.page, state.page);
@@ -1039,6 +1049,23 @@ function inputText(value, onChange) {
   i.addEventListener("input", (e) => onChange(e.target.value));
   return i;
 }
+
+/* --------------------------
+   DB Index (fast path lookup)
+--------------------------- */
+let _dbEntryByPath = null;
+function rebuildDbIndex() {
+  _dbEntryByPath = new Map();
+  const entries = state.db?.entries || [];
+  for (const e of entries) {
+    if (e?.path) _dbEntryByPath.set(e.path, e);
+  }
+}
+function dbEntryForPath(path) {
+  if (!_dbEntryByPath) rebuildDbIndex();
+  return _dbEntryByPath.get(path) || null;
+}
+
 function selectFromDb(path, value, onChange) {
   const entry = (state.db?.entries || []).find((e) => e.path === path);
   const opts = entry?.values || [];
@@ -1048,6 +1075,271 @@ function selectFromDb(path, value, onChange) {
   s.value = value || opts[0];
   s.addEventListener("change", (e) => onChange(e.target.value));
   return s;
+}
+
+
+/* --------------------------
+   Generic Key Editor (works with any imported JSON)
+--------------------------- */
+function isScalar(v) {
+  return v === null || typeof v === "string" || typeof v === "number" || typeof v === "boolean";
+}
+function valueType(v) {
+  if (v === null) return "null";
+  if (Array.isArray(v)) return "array";
+  return typeof v;
+}
+function canonicalizePath(p) {
+  // Convert people[0].eyeColor -> people[].eyeColor (for DB lookups + grouping)
+  return String(p || "").replace(/\[\d+\]/g, "[]");
+}
+
+function getAtSegments(obj, segs) {
+  let cur = obj;
+  for (const s of segs) {
+    if (cur == null) return undefined;
+    cur = cur[s];
+  }
+  return cur;
+}
+function setAtSegments(obj, segs, val) {
+  if (!segs.length) return;
+  let cur = obj;
+  for (let i = 0; i < segs.length - 1; i++) {
+    const s = segs[i];
+    if (cur[s] === undefined || cur[s] === null) {
+      // create container based on next seg type
+      cur[s] = (typeof segs[i + 1] === "number") ? [] : {};
+    }
+    cur = cur[s];
+  }
+  cur[segs[segs.length - 1]] = val;
+}
+
+function parseSmartValue(text) {
+  const t = String(text ?? "").trim();
+  if (!t) return { ok: true, value: "" };
+  try {
+    return { ok: true, value: JSON.parse(t) };
+  } catch {
+    // Fallback: treat as a raw string for convenience (e.g. user types Green)
+    return { ok: true, value: t };
+  }
+}
+
+function openAdvancedValueEditor(opts) {
+  // opts: { title, currentValue, onSave(value) }
+  const ta = el("textarea", { style: "min-height:220px" }, (typeof opts.currentValue === "string" ? JSON.stringify(opts.currentValue) : JSON.stringify(opts.currentValue, null, 2)));
+  const hint = el("div", { class: "small" }, "Tip: You can paste full JSON (object/array) or type a scalar (e.g. Green). Strings can be typed without quotes.");
+  const saveBtn = el("button", { class: "btn primary" }, "Save");
+  saveBtn.addEventListener("click", () => {
+    const parsed = parseSmartValue(ta.value);
+    if (!parsed.ok) {
+      toast("Invalid value");
+      return;
+    }
+    try {
+      opts.onSave(parsed.value);
+      closeTopModal();
+      toast("Updated");
+      rerender();
+    } catch (e) {
+      toast("Update failed: " + (e?.message || ""));
+    }
+  });
+
+  openModal(el("div", {}, [
+    el("div", { class: "modalHeader" }, [
+      el("div", { class: "modalTitle" }, opts.title || "Advanced Editor"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+    ]),
+    hr(),
+    hint,
+    hr(),
+    ta,
+    hr(),
+    el("div", { class: "row" }, [
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Cancel"),
+      saveBtn,
+    ]),
+  ]));
+}
+
+function buildKeyInventory(root) {
+  const out = [];
+  const walk = (node, segs, pathStr) => {
+    const t = valueType(node);
+    if (isScalar(node)) {
+      out.push({ path: pathStr, canonical: canonicalizePath(pathStr), segs: [...segs], type: t, value: node });
+      return;
+    }
+    if (Array.isArray(node)) {
+      // if empty, still allow editing array as a whole
+      if (node.length === 0) {
+        out.push({ path: pathStr, canonical: canonicalizePath(pathStr), segs: [...segs], type: "array", value: node });
+        return;
+      }
+      for (let i = 0; i < node.length; i++) {
+        const p2 = pathStr ? `${pathStr}[${i}]` : `[${i}]`;
+        walk(node[i], [...segs, i], p2);
+      }
+      return;
+    }
+    if (node && typeof node === "object") {
+      const keys = Object.keys(node);
+      if (keys.length === 0) {
+        out.push({ path: pathStr, canonical: canonicalizePath(pathStr), segs: [...segs], type: "object", value: node });
+        return;
+      }
+      for (const k of keys) {
+        const p2 = pathStr ? `${pathStr}.${k}` : k;
+        walk(node[k], [...segs, k], p2);
+      }
+      return;
+    }
+    // fallback
+    out.push({ path: pathStr, canonical: canonicalizePath(pathStr), segs: [...segs], type: t, value: node });
+  };
+  walk(root, [], "");
+  return out.filter((x) => x.path); // drop root empty
+}
+
+function categorizeKey(invItem) {
+  // 1) DB category if known
+  const e = dbEntryForPath(invItem.canonical);
+  if (e?.category) return e.category;
+  // 2) heuristic: first segment or token match
+  const first = String(invItem.path).split(/[.\[]/)[0] || "Uncategorized";
+  const p = invItem.canonical.toLowerCase();
+  if (p.includes("eye")) return "Eyes";
+  if (p.includes("hair")) return "Hair";
+  if (p.includes("skin") || p.includes("freckle") || p.includes("makeup")) return "Skin & Makeup";
+  if (p.includes("cloth") || p.includes("outfit") || p.includes("dress") || p.includes("shoe")) return "Clothing";
+  if (p.includes("light") || p.includes("camera") || p.includes("lens") || p.includes("frame") || p.includes("composition")) return "Camera & Composition";
+  return first || "Uncategorized";
+}
+
+function genericKeyEditorCard() {
+  if (!state.editableJson) return null;
+
+  // Ensure baseline exists for "Default"
+  if (!state.originalJson) {
+    try {
+      state.originalJson = state.rawJsonText ? JSON.parse(state.rawJsonText) : JSON.parse(JSON.stringify(state.editableJson));
+    } catch {
+      state.originalJson = JSON.parse(JSON.stringify(state.editableJson));
+    }
+  }
+
+  const inv = buildKeyInventory(state.editableJson);
+  const withCats = inv.map((x) => ({ ...x, category: categorizeKey(x) }));
+
+  const search = el("input", { type: "text", placeholder: "Search keys (path contains…)", value: state.keySearch || "" });
+  search.addEventListener("input", (e) => { state.keySearch = e.target.value; persistDraft(); rerender(); });
+
+  const q = (state.keySearch || "").trim().toLowerCase();
+  const filtered = q ? withCats.filter((x) => x.path.toLowerCase().includes(q) || x.canonical.toLowerCase().includes(q)) : withCats;
+
+  // group by category
+  const byCat = new Map();
+  for (const item of filtered) {
+    const c = item.category || "Uncategorized";
+    if (!byCat.has(c)) byCat.set(c, []);
+    byCat.get(c).push(item);
+  }
+  const cats = [...byCat.keys()].sort((a, b) => a.localeCompare(b));
+
+  const renderRow = (item) => {
+    const orig = getAtSegments(state.originalJson, item.segs);
+    const cur = getAtSegments(state.editableJson, item.segs);
+    const canon = item.canonical;
+    const entry = dbEntryForPath(canon);
+    const values = Array.isArray(entry?.values) ? entry.values : [];
+    const isLeafScalar = isScalar(cur);
+
+    const left = el("div", { style: "min-width:0" }, [
+      el("div", { style: "font-weight:900;word-break:break-word" }, item.path),
+      el("div", { class: "small" }, `${canon} • ${item.type}` + (entry?.description ? ` • ${entry.description}` : "")),
+    ]);
+
+    const right = (() => {
+      const advancedBtn = el("button", { class: "btn" }, "Advanced");
+      advancedBtn.addEventListener("click", (e) => {
+        e.preventDefault(); e.stopPropagation();
+        openAdvancedValueEditor({
+          title: `Edit: ${item.path}`,
+          currentValue: cur,
+          onSave: (v) => { setAtSegments(state.editableJson, item.segs, v); persistDraft(); },
+        });
+      });
+
+      if (!isLeafScalar) {
+        const preview = el("div", { class: "small", style: "max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" }, JSON.stringify(cur));
+        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px" }, [preview, advancedBtn]);
+      }
+
+      if (!values.length) {
+        // freeform input + default + advanced
+        const i = el("input", { type: "text", value: (cur ?? "") === "" ? "" : String(cur) });
+        i.addEventListener("input", (e) => { setAtSegments(state.editableJson, item.segs, e.target.value); persistDraft(); });
+        const defBtn = el("button", { class: "btn" }, "Default");
+        defBtn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setAtSegments(state.editableJson, item.segs, orig); persistDraft(); rerender(); });
+        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [i, defBtn, advancedBtn]);
+      }
+
+      const s = el("select", {});
+      // Default option always first
+      const defaultLabel = `Default (keep: ${isScalar(orig) ? String(orig) : valueType(orig)})`;
+      s.appendChild(el("option", { value: "__DEFAULT__" }, defaultLabel));
+      for (const o of values) s.appendChild(el("option", { value: o }, o));
+
+      // Set selection
+      const sameAsOrig = (JSON.stringify(cur) === JSON.stringify(orig));
+      s.value = sameAsOrig ? "__DEFAULT__" : (values.includes(cur) ? cur : "__DEFAULT__");
+
+      s.addEventListener("change", (e) => {
+        const v = e.target.value;
+        if (v === "__DEFAULT__") setAtSegments(state.editableJson, item.segs, orig);
+        else setAtSegments(state.editableJson, item.segs, v);
+        persistDraft();
+        rerender();
+      });
+
+      return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [s, advancedBtn]);
+    })();
+
+    return el("div", { class: "settingsRow", style: "align-items:flex-start" }, [
+      left,
+      el("div", { style: "flex:0 0 auto" }, right),
+    ]);
+  };
+
+  const catNodes = cats.map((c) => {
+    const items = byCat.get(c) || [];
+    const key = "cat:" + c;
+    const open = !!state.keyEditorExpanded?.[key];
+    const headerBtn = el("button", { class: "btn", style: "width:100%;justify-content:space-between" }, [
+      el("span", {}, `${c} (${items.length})`),
+      el("span", { class: "small" }, open ? "Hide" : "Show"),
+    ]);
+    headerBtn.addEventListener("click", () => {
+      state.keyEditorExpanded = state.keyEditorExpanded || {};
+      state.keyEditorExpanded[key] = !state.keyEditorExpanded[key];
+      persistDraft();
+      rerender();
+    });
+
+    const body = open ? el("div", { style: "margin-top:10px" }, items.map(renderRow)) : null;
+    return el("div", { style: "margin-bottom:12px" }, [headerBtn, body].filter(Boolean));
+  });
+
+  return card("Key Editor (Any JSON)", [
+    el("div", { class: "small" }, "Browse and edit imported JSON keys directly. Use Default to keep the original value. Advanced supports objects/arrays now."),
+    hr(),
+    search,
+    hr(),
+    ...catNodes,
+  ]);
 }
 
 function editPage() {
@@ -1133,7 +1425,7 @@ function editPage() {
     ]),
   ]);
 
-  return el("div", { class: "screen" }, [content]);
+  return el("div", { class: "screen" }, [content, genericKeyEditorCard()].filter(Boolean));
 }
 
 function pickUseCasePrompt(tab) {
@@ -1273,6 +1565,7 @@ function settingsPage() {
       const v = validateDatabase(j);
       if (!v.ok) throw new Error(v.error);
       state.db = j;
+      rebuildDbIndex();
       saveLS(STORAGE.db, j);
       toast("Imported DB");
       rerender();
@@ -1301,6 +1594,7 @@ function settingsPage() {
         const vd = validateDatabase(j.database);
         if (!vd.ok) throw new Error("DB: " + vd.error);
         state.db = j.database;
+        rebuildDbIndex();
         saveLS(STORAGE.db, j.database);
       }
       if (j.prompts) {
@@ -1416,6 +1710,7 @@ async function init() {
   const dbLS = loadLS(STORAGE.db, null);
   const prLS = loadLS(STORAGE.prompts, null);
   state.db = dbLS || (await fetchJson("database.json"));
+  rebuildDbIndex();
   state.prompts = prLS || (await fetchJson("prompts.json"));
 
   const clLS = loadLS(STORAGE.changelog, null);
@@ -1426,6 +1721,13 @@ async function init() {
   if (draft?.editableJson) {
     state.editableJson = draft.editableJson;
     state.rawJsonText = draft.rawJsonText || JSON.stringify(draft.editableJson, null, 2);
+    state.originalJson = draft.originalJson || null;
+    state.keySearch = draft.keySearch || "";
+    state.keyEditorExpanded = draft.keyEditorExpanded || {};
+    // If originalJson was not persisted, reconstruct from rawJsonText if possible
+    if (!state.originalJson && state.rawJsonText) {
+      try { state.originalJson = JSON.parse(state.rawJsonText); } catch {}
+    }
   }
   const lastPage = loadLS(STORAGE.page, "home");
   if (lastPage) state.page = lastPage;
