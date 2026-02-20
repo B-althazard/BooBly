@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.8";
+const VERSION = "1.2.8-patch";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -488,39 +488,20 @@ function openHelpModal() {
 }
 
 function openChangelogModal() {
-  const text =
-`BooBly Changelog
-
-v1.0.0
-- Initial MVP: Create/Edit/Optimize/Settings
-- KV database + prompts import/export
-- PWA + offline cache
-
-v1.1.0
-- Glass UI update
-- Clear button + JSON import improvements
-- Master JSON template + converter
-- Basic prompt blocks
-
-v1.2.0
-- Responsive layout improvements
-- Menu toggle closes Settings
-- Sun/Moon theme toggle
-- Draft persistence to prevent refresh data loss
-- Import modal: Paste from clipboard
-- Expanded JSON Data summary
-- Fixed-height console with scroll
-- JSON code: line numbers + syntax highlight
-- Preset images (upload in Settings → Presets)
-- Unified output option (merge JSON + prompts)
-- Help guide added`;
+  const cl = state.changelog || { entries: [] };
+  const list = (cl.entries || []).slice().reverse().map(e => {
+    const header = el("div", { style: "font-weight:900; margin-top:12px;" }, "v" + e.version);
+    const date = e.date ? el("div", { class: "small", style: "margin-top:2px; opacity:.7;" }, e.date) : null;
+    const ul = el("ul", { style: "margin:8px 0 0 18px; line-height:1.55;" }, (e.changes || []).map(c => el("li", { style: "margin:6px 0;" }, c)));
+    return el("div", {}, [header, date, ul].filter(Boolean));
+  });
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Changelog"),
       el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
     ]),
     hr(),
-    el("div", { class: "small", style: "white-space:pre-wrap;" }, text),
+    el("div", { class: "small" }, list.length ? list : el("div", { class:"small" }, "No changelog data.")),
   ]));
 }
 
@@ -1066,7 +1047,7 @@ function settingsPage() {
   const exportAll = el("button", {
     class: "btn primary",
     onclick: () => {
-      const payload = { version: VERSION, exported_at: Date.now(), database: state.db, prompts: state.prompts, presets: presetsList() };
+      const payload = { version: VERSION, exported_at: Date.now(), database: state.db, prompts: state.prompts, presets: presetsList(), changelog: state.changelog };
       downloadJson("boobly-export-all.json", payload);
     },
   }, "Export All");
