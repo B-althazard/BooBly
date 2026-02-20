@@ -40,7 +40,10 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.8-patch";
+const VERSION = "1.2.8-patch.1";
+
+const DEFAULT_CHANGELOG = {"app": "BooBly", "schema": 1, "entries": [{"version": "1.0.0", "date": "2026-02-19", "changes": ["Initial MVP: Home/Create/Edit/Optimize/Settings navigation", "Import JSON (paste/upload), editable JSON view, basic summary table", "Key-Value database (local), prompts library (local), import/export JSON files", "PWA + offline service worker caching"]}, {"version": "1.1.0", "date": "2026-02-19", "changes": ["UI pass: glass cards, improved spacing, consistent buttons", "JSON import UX improvements + Clear button", "Master JSON template + converter (normalize to master structure)", "Prompt blocks foundation (master_prompt/model/use-case)"]}, {"version": "1.2.0", "date": "2026-02-19", "changes": ["Responsive layout improvements (mobile-first)", "Hamburger menu toggle closes Settings", "Theme toggle UI (sun/moon concept)", "Draft persistence (reduce data loss on refresh)", "Import modal: Paste from clipboard", "Expanded JSON Data summary", "Console: fixed height + internal scroll", "JSON code: line numbers + syntax highlight", "Preset images support + gallery groundwork", "Unified output option groundwork (merge JSON + prompt blocks)", "Help guide modal added"]}, {"version": "1.2.1", "date": "2026-02-20", "changes": ["Cache-clean rebuild to address service worker serving old bundles"]}, {"version": "1.2.3", "date": "2026-02-20", "changes": ["Bundled 7 provided preset images into the build", "Generated 7 default presets referencing the bundled images", "Auto-seed presets on first load if none exist", "Service worker cache/version bump to prevent stale assets"]}, {"version": "1.2.4", "date": "2026-02-20", "changes": ["Preset names + Home captions; presets diversified (scene/outfit/hair/eyes/framing)", "Create: Import Code + Upload File inline; normalized action button sizing", "Console: max height enforced + internal scroll", "Settings: Open LLM URL toggle layout fixed", "Help modal reformatted into step list"]}, {"version": "1.2.5", "date": "2026-02-20", "changes": ["Preset name editing now updates preset list (and JSON identity in sync)", "Edit: preset selector dropdown (switch presets inside Edit)", "Edit: Environment moved to DB-backed dropdown", "DB: added environment location path and values"]}, {"version": "1.2.6", "date": "2026-02-20", "changes": ["Major DB expansion for higher-fidelity generation", "Added: Scene Construction block (10×20), Lighting Detail block (10×20), Visual Style block (10×20)", "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets", "Added camera physics effects table + photography terminology"]}, {"version": "1.2.7", "date": "2026-02-20", "changes": ["Attempted fix for segmented controls interactions (Makeup/Freckles)", "Create: Choose Preset button full-width for consistency", "Edit: ensured preset switcher present (if missing in prior builds)", "Cache/version bump"]}, {"version": "1.2.8", "date": "2026-02-20", "changes": ["Critical fix: Import no longer auto-converts JSON to Master template", "Convert → Master now only runs when explicitly pressed", "Export now outputs imported/edited JSON (no forced master merge)", "Cache/version bump"]}, {"version": "1.2.8-patch", "date": "2026-02-20", "changes": ["Changelog moved to changelog.json (single source of truth)", "Changelog modal now renders from changelog.json (maintainable)", "Export All now includes changelog; Import All restores changelog"]}]};
+
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -488,7 +491,7 @@ function openHelpModal() {
 }
 
 function openChangelogModal() {
-  const cl = state.changelog || { entries: [] };
+  const cl = (state.changelog && Array.isArray(state.changelog.entries) && state.changelog.entries.length) ? state.changelog : DEFAULT_CHANGELOG;
   const list = (cl.entries || []).slice().reverse().map(e => {
     const header = el("div", { style: "font-weight:900; margin-top:12px;" }, "v" + e.version);
     const date = e.date ? el("div", { class: "small", style: "margin-top:2px; opacity:.7;" }, e.date) : null;
@@ -501,7 +504,7 @@ function openChangelogModal() {
       el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
     ]),
     hr(),
-    el("div", { class: "small" }, list.length ? list : el("div", { class:"small" }, "No changelog data.")),
+    el("div", { class: "small" }, list.length ? list : [el("div", { class:"small" }, "No changelog data.")]),
   ]));
 }
 
