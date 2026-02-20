@@ -1,4 +1,96 @@
-// BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
+/
+
+function validateMaster(m) {
+  const issues = [];
+  if (!m || typeof m !== "object") return [{ level:"error", path:"$", message:"Master is not an object." }];
+  if (!m.meta || typeof m.meta !== "object") issues.push({ level:"error", path:"meta", message:"Missing meta." });
+  if (!m.meta?.master_version) issues.push({ level:"warn", path:"meta.master_version", message:"Missing master_version." });
+  if (!Array.isArray(m.categories)) issues.push({ level:"error", path:"categories", message:"categories must be an array." });
+  if (!Array.isArray(m.fields)) issues.push({ level:"error", path:"fields", message:"fields must be an array." });
+  const catIds = new Set((m.categories||[]).map(c=>c.id));
+  const fieldIds = new Set();
+  for (const [i,f] of (m.fields||[]).entries()) {
+    if (!f.id) issues.push({ level:"error", path:`fields[${i}].id`, message:"Missing field id." });
+    if (f.id && fieldIds.has(f.id)) issues.push({ level:"error", path:`fields[${i}].id`, message:`Duplicate field id ${f.id}.` });
+    if (f.id) fieldIds.add(f.id);
+    if (!f.path) issues.push({ level:"error", path:`fields[${i}].path`, message:"Missing path." });
+    if (!f.control?.kind) issues.push({ level:"warn", path:`fields[${i}].control.kind`, message:"Missing control kind." });
+    if (f.category && !catIds.has(f.category)) issues.push({ level:"warn", path:`fields[${i}].category`, message:`Unknown category '${f.category}'.` });
+    // validate vocab references
+    const src = f.control?.source;
+    if (typeof src === "string" && src.startsWith("vocab.")) {
+      const key = src.slice(6);
+      if (!m.vocab || !(key in m.vocab)) issues.push({ level:"error", path:`fields[${i}].control.source`, message:`Missing vocab '${key}'.` });
+      else if (!Array.isArray(m.vocab[key])) issues.push({ level:"error", path:`vocab.${key}`, message:"Vocab must be an array." });
+    }
+  }
+  return issues;
+}
+
+function canonicalizeAny(inputObj, master) {
+  const j = inputObj || {};
+  const hasCanonical = !!(j && (j.characters || j.scene || j.schema_version));
+  if (hasCanonical) {
+    const out = JSON.parse(JSON.stringify(j));
+    logAdapter(out, "canonical_passthrough", { note: "imported as-is" });
+    return out;
+  }
+  // minimal legacy → canonical conversion
+  const out = {
+    schema_version: master?.meta?.canonical_version || "1.3.0",
+    scene: {},
+    characters: [],
+    style: {},
+    technical: {},
+    notes: { unmapped: {}, source_text: "", adapter_log: [] },
+  };
+  out.notes.unmapped._source = JSON.parse(JSON.stringify(j));
+  logAdapter(out, "minimal_legacy_to_canonical", { note: "minimal mapping" });
+  const c0 = { id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())), name: "Character 1" };
+
+  const legacyName = getByPath(j, ["subject","identity","name"], "");
+  if (legacyName) c0.name = legacyName;
+  const hairColor = getByPath(j, ["subject","hair","color"], "");
+  if (hairColor) c0.hair = { ...(c0.hair||{}), color: hairColor };
+  const hairStyle = getByPath(j, ["subject","hair","style"], "");
+  if (hairStyle) c0.hair = { ...(c0.hair||{}), style: hairStyle };
+  const eyeColor = getByPath(j, ["subject","eyes","color"], "");
+  if (eyeColor) c0.face = { ...(c0.face||{}), eyes: { ...(c0.face?.eyes||{}), color: eyeColor } };
+  const freckles = getByPath(j, ["subject","skin","freckles"], "");
+  if (freckles) c0.face = { ...(c0.face||{}), freckles: !/^none/i.test(String(freckles)) };
+  const makeup = getByPath(j, ["subject","eyes","makeup"], "");
+  if (makeup) c0.face = { ...(c0.face||{}), makeup: { style: String(makeup) } };
+  const height = getByPath(j, ["subject","identity","height_cm"], null);
+  if (typeof height === "number") c0.body = { ...(c0.body||{}), height_cm: height };
+  const outfit = getByPath(j, ["clothing","outfit_type"], "") || getByPath(j, ["clothing"], "");
+  if (outfit) c0.outfit = { description: String(outfit) };
+
+  const env = getByPath(j, ["image_metadata","environment","location"], "");
+  if (env) out.scene.location = env;
+  const light = getByPath(j, ["image_metadata","lighting","type"], "");
+  if (light) out.scene.lighting = { style: String(light) };
+  const framing = getByPath(j, ["composition","framing"], "");
+  if (framing) out.scene.camera = { ...(out.scene.camera||{}), shot: String(framing) };
+
+  out.characters.push(c0);
+  return out;
+}
+
+function modalView(title, bodyNode, actions = []) {
+  const btns = actions.map(a => el("button", { class: "btn" + (a.primary ? " primary" : ""), onclick: (e)=>{ e.preventDefault(); a.onClick && a.onClick(); } }, a.label));
+  const node = el("div", {}, [
+    el("div", { class: "modalHeader" }, [
+      el("div", { class: "modalTitle" }, title),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
+    ]),
+    hr(),
+    bodyNode,
+    actions.length ? el("div", { class: "row gap", style: "justify-content:flex-end;margin-top:12px" }, btns) : null,
+  ]);
+  openModal(node);
+}
+/ BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
 
 const state = {
   db: null,
@@ -765,6 +857,7 @@ function openHelpModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Help — How to use BooBly"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     ol,
@@ -783,6 +876,7 @@ function openChangelogModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Changelog"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     el("div", { class: "small" }, list.length ? list : [el("div", { class:"small" }, "No changelog data.")]),
@@ -805,6 +899,7 @@ function openPresetPicker() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Select Preset"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     grid,
   ]));
@@ -849,6 +944,7 @@ function openPresetImagePicker(presetId) {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Set Preset Image"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     input,
@@ -883,8 +979,11 @@ function openImportModal() {
         return;
       }
       state.parsedJson = parsed;
-      state.editableJson = parsed;
-      state.rawJsonText = JSON.stringify(parsed, null, 2);
+      const canon = canonicalizeAny(parsed, state.master);
+      state.editableJson = canon;
+      state.lastValidationIssues = validateCanonical(canon, state.master);
+      state.rawJsonText = JSON.stringify(canon, null, 2);
+      state.originalJson = JSON.parse(JSON.stringify(canon));
       persistDraft();
       toast("Imported");
       document.querySelector(".modalBack")?.remove();
@@ -896,6 +995,7 @@ function openImportModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Import JSON"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     ta,
@@ -1025,6 +1125,76 @@ function trKV(key, value, hasSwitch = false, switchOn = false, onToggle = null) 
 }
 
 function importPage() {
+
+const master = state.master;
+const validation = state.lastValidationIssues || [];
+const vErr = validation.filter(x=>x.level==="error").length;
+const vWarn = validation.filter(x=>x.level!=="error").length;
+const adapterLog = state.editableJson?.notes?.adapter_log || [];
+const reportCard = state.editableJson ? card("Import Report", [
+  el("div", { class: "small" }, `Adapter log: ${adapterLog.length} entry(s)`),
+  el("div", { class: "small" }, `Validation: ${vErr} error(s), ${vWarn} warning(s)`),
+  adapterLog.length ? el("details", {}, [
+    el("summary", { class: "small linkish" }, "Show adapter log"),
+    el("div", { class: "miniList" }, adapterLog.slice(0,10).map(a => el("div", { class: "miniRow" }, `${new Date(a.at||Date.now()).toLocaleString()} • ${a.adapter_id}`))),
+  ]) : el("div", { class: "small muted" }, "No adapter log yet."),
+  validation.length ? el("details", {}, [
+    el("summary", { class: "small linkish" }, "Show validation issues"),
+    el("div", { class: "miniList" }, validation.slice(0,30).map(it => el("div", { class: "miniRow" }, `${it.level.toUpperCase()} • ${it.path} — ${it.message}`))),
+  ]) : el("div", { class: "small muted" }, "No validation issues."),
+  el("div", { class: "row gap" }, [
+    el("button", { class: "btn primary", onclick: () => { state.page = "edit"; persistDraft(); rerender(); } }, "Go to Edit"),
+    el("button", { class: "btn", onclick: () => { state.page = "export"; persistDraft(); rerender(); } }, "Go to Export"),
+  ]),
+]) : null;
+
+const mergerCard = card("Preset Merger", [
+  el("div", { class: "small" }, "Merge two or more JSON files into one canonical output (later files override earlier values; characters are combined)."),
+  el("input", { type: "file", accept: ".json,application/json", class: "fileInput", multiple: "multiple", onchange: async (e) => {
+    const files = [...(e.target.files || [])];
+    state.mergeInputs = [];
+    for (const f of files) {
+      try {
+        const txt = await f.text();
+        const { parsed, error } = parseJsonLenient(txt);
+        if (error || !parsed) throw new Error(error || "Parse error");
+        const canon = canonicalizeAny(parsed, master);
+        state.mergeInputs.push({ name: f.name, canon });
+      } catch (err) {
+        state.mergeInputs.push({ name: f.name, error: String(err && (err.message || err)) });
+      }
+    }
+    rerender();
+  }}),
+  el("div", { class: "row gap" }, [
+    el("button", { class: "btn", onclick: () => {
+      const valids = state.mergeInputs.filter(x=>x.canon).map(x=>x.canon);
+      if (valids.length < 2) return toast("Select at least 2 valid JSON files");
+      const merged = mergeCanonicals(valids, master);
+      const issues = validateCanonical(merged, master);
+      state.mergeIssues = issues;
+      state.mergeResultText = JSON.stringify(merged, null, 2);
+      state.editableJson = merged;
+      state.rawJsonText = state.mergeResultText;
+      state.originalJson = JSON.parse(JSON.stringify(merged));
+      state.lastValidationIssues = issues;
+      persistDraft();
+      toast("Merged into canonical");
+      rerender();
+    } }, "Merge"),
+    el("button", { class: "btn", onclick: () => { state.mergeInputs = []; state.mergeResultText = ""; state.mergeIssues = null; rerender(); } }, "Clear"),
+  ]),
+  state.mergeInputs?.length ? el("details", {}, [
+    el("summary", { class: "small linkish" }, `Inputs (${state.mergeInputs.length})`),
+    el("div", { class: "miniList" }, state.mergeInputs.map(x => el("div", { class: "miniRow" }, x.error ? `✖ ${x.name}: ${x.error}` : `✓ ${x.name}`))),
+  ]) : el("div", { class: "small muted" }, "No merge inputs selected."),
+  state.mergeResultText ? el("details", {}, [
+    el("summary", { class: "small linkish" }, "Merged output preview"),
+    codeBlock(state.mergeResultText, () => { copyToClipboard(state.mergeResultText); toast("Copied"); }),
+    (state.mergeIssues && state.mergeIssues.length) ? el("div", { class: "small muted" }, `Merged validation: ${state.mergeIssues.filter(x=>x.level==="error").length} error(s), ${state.mergeIssues.length} total issues`) : null,
+  ]) : null,
+]);
+
   const presetsBtn = el("button", { class: "btn primary full", onclick: () => openPresetPicker() }, "Choose Preset");
   const importCodeBtn = el("button", { class: "btn soft", onclick: () => openImportModal() }, "{}  Import Code");
 
@@ -1046,8 +1216,11 @@ function importPage() {
         return;
       }
       state.parsedJson = parsed;
-      state.editableJson = parsed;
-      state.rawJsonText = JSON.stringify(parsed, null, 2);
+      const canon = canonicalizeAny(parsed, state.master);
+      state.editableJson = canon;
+      state.lastValidationIssues = validateCanonical(canon, state.master);
+      state.rawJsonText = JSON.stringify(canon, null, 2);
+      state.originalJson = JSON.parse(JSON.stringify(canon));
       persistDraft();
       toast("Imported");
       rerender();
@@ -1056,6 +1229,8 @@ function importPage() {
   const uploadBtn = el("button", { class: "btn soft", onclick: () => upload.click() }, "☁  Upload File");
 
   const topCards = el("div", { class: "stackCol" }, [
+    reportCard,
+    mergerCard,
     el("div", { class: "card" }, [
       el("div", { class: "cardBody" }, [
         el("div", { class: "small" }, "Select Preset"),
@@ -1249,6 +1424,7 @@ function openAdvancedValueEditor(opts) {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, opts.title || "Advanced Editor"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     hint,
@@ -1523,51 +1699,13 @@ function editPage() {
   const hasCanonical = !!(state.editableJson && (state.editableJson.characters || state.editableJson.scene || state.editableJson.schema_version));
 
   const convertToCanonical = () => {
-    const j = state.editableJson || {};
-    // Minimal legacy → canonical conversion (non-destructive: stores source in notes.unmapped)
-    const out = {
-      schema_version: master?.meta?.canonical_version || "1.3.0",
-      scene: {},
-      characters: [],
-      style: {},
-      technical: {},
-      notes: { unmapped: {}, source_text: "", adapter_log: [] },
-    };
-    out.notes.unmapped._source = JSON.parse(JSON.stringify(j));
-    const c0 = { id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())), name: "Character 1" };
-
-    // common legacy paths in existing presets
-    const legacyName = getByPath(j, ["subject","identity","name"], "");
-    if (legacyName) c0.name = legacyName;
-    const hairColor = getByPath(j, ["subject","hair","color"], "");
-    if (hairColor) c0.hair = { ...(c0.hair||{}), color: hairColor };
-    const hairStyle = getByPath(j, ["subject","hair","style"], "");
-    if (hairStyle) c0.hair = { ...(c0.hair||{}), style: hairStyle };
-    const eyeColor = getByPath(j, ["subject","eyes","color"], "");
-    if (eyeColor) c0.face = { ...(c0.face||{}), eyes: { ...(c0.face?.eyes||{}), color: eyeColor } };
-    const freckles = getByPath(j, ["subject","skin","freckles"], "");
-    if (freckles) c0.face = { ...(c0.face||{}), freckles: !/^none/i.test(String(freckles)) };
-    const makeup = getByPath(j, ["subject","eyes","makeup"], "");
-    if (makeup) c0.face = { ...(c0.face||{}), makeup: { style: String(makeup) } };
-    const height = getByPath(j, ["subject","identity","height_cm"], null);
-    if (typeof height === "number") c0.body = { ...(c0.body||{}), height_cm: height };
-    const outfit = getByPath(j, ["clothing","outfit_type"], "") || getByPath(j, ["clothing"], "");
-    if (outfit) c0.outfit = { description: String(outfit) };
-
-    // scene-ish legacy
-    const env = getByPath(j, ["image_metadata","environment","location"], "");
-    if (env) out.scene.location = env;
-    const light = getByPath(j, ["image_metadata","lighting","type"], "");
-    if (light) out.scene.lighting = { style: String(light) };
-    const framing = getByPath(j, ["composition","framing"], "");
-    if (framing) out.scene.camera = { ...(out.scene.camera||{}), shot: String(framing) };
-
-    out.characters.push(c0);
+    const out = canonicalizeAny(state.editableJson || {}, master);
     state.editableJson = out;
+    state.lastValidationIssues = validateCanonical(out, master);
     state.rawJsonText = JSON.stringify(out, null, 2);
     state.originalJson = JSON.parse(JSON.stringify(out));
     persistDraft();
-    toast("Converted to Canonical v1.3.0");
+    toast(`Converted to Canonical v${out.schema_version || master?.meta?.canonical_version || ""}`);
     rerender();
   };
 
@@ -1620,6 +1758,7 @@ function editPage() {
       el("div", { class: "modalHeader" }, [
         el("div", { class: "modalTitle" }, `Review Changes (${changedFields.length})`),
         el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
       ]),
       hr(),
       ...rows,
@@ -2193,6 +2332,7 @@ function openPresetsManager() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Presets (long-press image)"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     el("div", { class: "small" }, "Long-press a preset tile to set its image."),
@@ -2202,6 +2342,67 @@ function openPresetsManager() {
 }
 
 function settingsPage() {
+
+// Master Manager state summary
+const masterInfo = state.master?.meta || {};
+const issues = state.masterValidation || [];
+const hasErr = issues.some(x=>x.level==="error");
+const masterSummary = issues.length ? `${hasErr ? "Errors" : "Warnings"}: ${issues.filter(x=>x.level==="error").length} / ${issues.length}` : "No issues";
+const masterManagerCard = card("Master Manager", [
+  el("div", { class: "small" }, `Active master: ${masterInfo.master_version || "?"} • Canonical: ${masterInfo.canonical_version || "?"}`),
+  el("div", { class: "small muted" }, masterSummary),
+  el("div", { class: "row gap" }, [
+    el("button", { class: "btn", onclick: () => { state.masterValidation = validateMaster(state.master); toast("Validated active master"); rerender(); } }, "Validate Active"),
+    el("button", { class: "btn", onclick: () => { try { localStorage.removeItem(STORAGE.master); } catch {} state.master = JSON.parse(JSON.stringify(state.bundledMaster)); state.masterValidation = validateMaster(state.master); toast("Reset to bundled"); rerender(); } }, "Reset Bundled"),
+  ]),
+  el("div", { class: "small" }, "Upload a master JSON to preview diff and activate locally."),
+  el("input", { type: "file", accept: ".json,application/json", class: "fileInput", onchange: async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const txt = await f.text(); state.pendingMasterText = txt;
+    try {
+      state.pendingMaster = JSON.parse(txt);
+      state.masterDiffText = diffText(JSON.stringify(state.master, null, 2), JSON.stringify(state.pendingMaster, null, 2));
+      state.masterValidation = validateMaster(state.pendingMaster);
+      toast("Master loaded");
+    } catch (err) {
+      state.pendingMaster = null;
+      state.masterDiffText = "";
+      state.masterValidation = [{ level: "error", path: "$", message: String(err && (err.message || err)) }];
+      toast("Invalid master");
+    }
+    rerender();
+  }}),
+  state.pendingMaster ? el("div", { class: "row gap" }, [
+    el("button", { class: "btn", onclick: () => modalView("Master Diff", el("pre", { class: "diffBox" }, state.masterDiffText || "(no differences)")) }, "View Diff"),
+    el("button", { class: "btn primary", onclick: () => {
+      const iss = state.masterValidation || [];
+      if (iss.some(x=>x.level==="error")) return toast("Fix master errors first");
+      saveLS(STORAGE.master, state.pendingMaster);
+      state.master = state.pendingMaster;
+      state.masterValidation = validateMaster(state.master);
+      toast("Master activated");
+      rerender();
+    } }, "Activate"),
+  ]) : el("div", { class: "small muted" }, "No uploaded master loaded."),
+  (state.masterValidation && state.masterValidation.length) ? el("details", {}, [
+    el("summary", { class: "small linkish" }, "Show master validation"),
+    el("div", { class: "miniList" }, (state.masterValidation||[]).slice(0,80).map(it => el("div", { class: "miniRow" }, `${it.level.toUpperCase()} • ${it.path} — ${it.message}`))),
+  ]) : null,
+]);
+
+const qaCard = card("Mobile QA Matrix", [
+  el("div", { class: "small" }, "Quick sanity checks (run on iPhone/Android + desktop widths):"),
+  el("div", { class: "miniList" }, [
+    "Import: paste/upload, preset picker, merger",
+    "Edit Guided: collapsible cards, pickers, randomizer",
+    "Edit Expert: search, inspector, object/array modal",
+    "Review Changes → Export flow",
+    "Console dock: fixed height, scroll",
+    "Multi-character scope selector",
+    "Performance: large JSON responsiveness",
+  ].map(t => el("div", { class: "miniRow" }, `• ${t}`))),
+]);
+
   const wpInput = el("input", {
     type: "file",
     accept: "image/*",
@@ -2383,6 +2584,7 @@ async function init() {
   const mLS = loadLS(STORAGE.master, null);
   state.master = mLS || (await fetchJson("master_file_v1_3_1.json").catch(() => null));
   if (state.master) saveLS(STORAGE.master, state.master);
+  state.bundledMaster = JSON.parse(JSON.stringify(state.master));
 
   const clLS = loadLS(STORAGE.changelog, null);
   state.changelog = clLS || (await fetchJson("changelog.json").catch(() => DEFAULT_CHANGELOG));

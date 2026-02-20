@@ -527,3 +527,13 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,45,85,.55); box
 .tok-num{color: rgba(16,185,129,.95)}
 .tok-bool{color: rgba(245,158,11,.95); font-weight:900}
 .tok-null{color: rgba(148,163,184,.95); font-weight:900}
+
+
+/* Master Manager / Diff / Mini lists */
+.fileInput { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--sep); background: var(--card); }
+.miniList { display: grid; gap: 8px; margin-top: 10px; }
+.miniRow { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--sep); background: var(--card); font-size: 12px; color: var(--text); }
+.diffBox { max-height: 55vh; overflow: auto; white-space: pre; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--sep); background: var(--card); }
+.row.gap { gap: 10px; flex-wrap: wrap; }
+.btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
+@media (max-width: 520px) { .modal { width: min(96vw, 560px); } .diffBox { max-height: 60vh; } }
