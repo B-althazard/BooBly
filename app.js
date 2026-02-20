@@ -1685,6 +1685,56 @@ function editPage() {
     }
     setByMasterPath(state.editableJson, field.path, value, activeIdx);
   }
+  function randomizeGuided() {
+    if (!master?.fields) return toast("No master fields");
+    const guidedFields = master.fields.filter((f) => (f.visibility?.modes || []).includes("guided"));
+    let n = 0;
+
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    for (const f of guidedFields) {
+      const c = f.control || {};
+      // Only randomize structured controls (avoid freeform text in Guided).
+      if (c.kind === "select") {
+        const src = c.source || "";
+        const opts = (typeof src === "string" && src.startsWith("vocab."))
+          ? (master?.vocab?.[src.slice(6)] || [])
+          : [];
+        if (!opts.length) continue;
+        const val = pick(opts);
+        if (f.scope === "character") applyCharacterValue(f, val);
+        else setByMasterPath(state.editableJson, f.path, val, 0);
+        n++;
+        continue;
+      }
+      if (c.kind === "segmented") {
+        // yes/no segmented → boolean random
+        const v = Math.random() < 0.5 ? false : true;
+        if (f.scope === "character") applyCharacterValue(f, v);
+        else setByMasterPath(state.editableJson, f.path, v, 0);
+        n++;
+        continue;
+      }
+      if (c.kind === "slider" || c.kind === "stepper") {
+        const min = Number(c.min ?? 0);
+        const max = Number(c.max ?? 100);
+        const step = Number(c.step ?? 1);
+        const span = Math.max(0, Math.floor((max - min) / step));
+        const val = min + (Math.floor(Math.random() * (span + 1)) * step);
+        if (f.scope === "character") applyCharacterValue(f, val);
+        else setByMasterPath(state.editableJson, f.path, val, 0);
+        n++;
+        continue;
+      }
+      // list_editor / input / textarea / json_viewer: skip
+    }
+
+    if (!n) return toast("Nothing to randomize");
+    persistDraft();
+    toast(`Randomized ${n} field${n === 1 ? "" : "s"}`);
+    rerender();
+  }
+
 
   function fieldRow(field) {
     const idx = (field.scope === "character") ? activeIdx : 0;
@@ -1733,19 +1783,48 @@ function editPage() {
         const opts = (typeof src === "string" && src.startsWith("vocab."))
           ? (master?.vocab?.[src.slice(6)] || [])
           : [];
-        const s = el("select", {});
-        s.appendChild(el("option", { value: "__DEFAULT__" }, `Default (keep: ${String(orig ?? "—")})`));
-        for (const o of opts) s.appendChild(el("option", { value: String(o) }, String(o)));
-        s.value = isDefault ? "__DEFAULT__" : String(cur);
-        s.addEventListener("change", (e) => {
-          const v = e.target.value;
-          const val = (v === "__DEFAULT__") ? orig : v;
-          if (field.scope === "character") applyCharacterValue(field, val);
-          else setByMasterPath(state.editableJson, field.path, val, 0);
-          persistDraft();
-          rerender();
-        });
-        return s;
+        const makeSelectEl = () => {
+          const s = el("select", {});
+          s.appendChild(el("option", { value: "__DEFAULT__" }, `Default (keep: ${String(orig ?? "—")})`));
+          for (const o of opts) s.appendChild(el("option", { value: String(o) }, String(o)));
+          s.value = isDefault ? "__DEFAULT__" : String(cur);
+          s.addEventListener("change", (e) => {
+            const v = e.target.value;
+            const val = (v === "__DEFAULT__") ? orig : v;
+            if (field.scope === "character") applyCharacterValue(field, val);
+            else setByMasterPath(state.editableJson, field.path, val, 0);
+            persistDraft();
+            rerender();
+          });
+          return s;
+        };
+
+        // iOS-minimal Guided UX: show as a tap-to-pick cell, with a dropdown in a modal sheet.
+        if (state.editMode === "guided") {
+          const preview = isDefault ? `Default (keep: ${String(orig ?? "—")})` : String(cur ?? "—");
+          const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
+            e.preventDefault();
+            const s = makeSelectEl();
+            openModal(el("div", {}, [
+              el("div", { class: "modalHeader" }, [
+                el("div", { class: "modalTitle" }, field.label),
+                el("button", { class: "btn", onclick: () => closeTopModal() }, "Done"),
+              ]),
+              el("div", { class: "modalBody" }, [
+                el("div", { class: "small" }, field.help_text || ""),
+                s,
+              ].filter(Boolean)),
+            ]));
+          } }, [
+            el("div", { class: "iosCellMain" }, [
+              el("div", { class: "iosCellValue" }, preview),
+            ]),
+            el("div", { class: "iosChevron" }, "›"),
+          ]);
+          return btn;
+        }
+
+        return makeSelectEl();
       }
 
       if (c.kind === "slider") {
@@ -1961,6 +2040,7 @@ function editPage() {
       scopeSelector,
       applyScopeSelector,
       el("div", { style:"flex:1" }, ""),
+      iconTextBtn("Randomize", "btn", randomizeGuided),
       chip(`Changed: ${changedFields.length}`, changedFields.length ? "warn" : "ok"),
       iconTextBtn("Review", "btn", openReviewChanges),
       iconTextBtn("Export", "btn primary", () => { state.page = "export"; persistDraft(); rerender(); }),

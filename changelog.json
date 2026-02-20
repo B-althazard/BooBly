@@ -188,7 +188,9 @@
         "Guided editor rebuilt with collapsible category cards and standardized field rows.",
         "Edit toolbar is sticky with change count, review changes, and export shortcut.",
         "Expert mode redesigned as split workbench (categories/keys left, inspector right) with filters and safe reset.",
-        "Console/error boxes fixed height with internal scroll (no layout jumps)."
+        "Console/error boxes fixed height with internal scroll (no layout jumps).",
+        "Guided selects now use an iOS-style tap-to-pick cell with a modal dropdown (restored dropdown functionality).",
+        "Added Randomize button in Edit toolbar to randomize structured guided fields (select/segmented/slider/stepper) respecting character scope."
       ]
     }
   ]
