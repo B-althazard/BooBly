@@ -1773,9 +1773,37 @@ function editPage() {
         });
         return i;
       }
-
       if (c.kind === "textarea") {
-        const t = el("textarea", { rows: c.rows || 3 }, String(cur ?? orig ?? ""));
+        const currentText = String(cur ?? orig ?? "");
+        if (state.editMode === "guided") {
+          const trimmed = currentText.trim();
+          const preview = trimmed ? trimmed.slice(0, 42) + (trimmed.length > 42 ? "…" : "") : (c.placeholder || "Tap to edit");
+          const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
+            e.preventDefault();
+            const ta = el("textarea", { rows: c.rows || 8, placeholder: c.placeholder || "" }, currentText);
+            ta.addEventListener("input", (ev) => {
+              const v = ev.target.value;
+              if (field.scope === "character") applyCharacterValue(field, v);
+              else setByMasterPath(state.editableJson, field.path, v, 0);
+              persistDraft();
+            });
+            openModal(el("div", {}, [
+              el("div", { class: "modalHeader" }, [
+                el("div", { class: "modalTitle" }, field.label),
+                el("button", { class: "btn", onclick: () => document.querySelector('.modalBack')?.remove() }, "Done"),
+              ]),
+              el("div", { class: "modalBody" }, [ta]),
+            ]));
+          } }, [
+            el("div", { class: "iosCellMain" }, [
+              el("div", { class: "iosCellValue" }, preview),
+            ]),
+            el("div", { class: "iosChevron" }, "›"),
+          ]);
+          return btn;
+        }
+
+        const t = el("textarea", { rows: c.rows || 3 }, currentText);
         t.addEventListener("input", (e) => {
           const v = e.target.value;
           if (field.scope === "character") applyCharacterValue(field, v);
@@ -1784,6 +1812,7 @@ function editPage() {
         });
         return t;
       }
+
 
       if (c.kind === "list_editor") {
         const arr = Array.isArray(cur) ? cur : (Array.isArray(orig) ? orig : []);
@@ -1822,9 +1851,36 @@ function editPage() {
         });
         return el("div", {}, [list, add]);
       }
-
       // default: input
-      const i = el("input", { type:"text", placeholder: c.placeholder || "", value: String(cur ?? orig ?? "") });
+      const currentVal = String(cur ?? orig ?? "");
+      if (state.editMode === "guided") {
+        const preview = currentVal.trim() ? currentVal.trim() : (c.placeholder || "Tap to edit");
+        const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
+          e.preventDefault();
+          const inp = el("input", { type: "text", placeholder: c.placeholder || "", value: currentVal });
+          inp.addEventListener("input", (ev) => {
+            const v = ev.target.value;
+            if (field.scope === "character") applyCharacterValue(field, v);
+            else setByMasterPath(state.editableJson, field.path, v, 0);
+            persistDraft();
+          });
+          openModal(el("div", {}, [
+            el("div", { class: "modalHeader" }, [
+              el("div", { class: "modalTitle" }, field.label),
+              el("button", { class: "btn", onclick: () => document.querySelector('.modalBack')?.remove() }, "Done"),
+            ]),
+            el("div", { class: "modalBody" }, [inp]),
+          ]));
+        } }, [
+          el("div", { class: "iosCellMain" }, [
+            el("div", { class: "iosCellValue" }, preview),
+          ]),
+          el("div", { class: "iosChevron" }, "›"),
+        ]);
+        return btn;
+      }
+
+      const i = el("input", { type:"text", placeholder: c.placeholder || "", value: currentVal });
       i.addEventListener("input", (e) => {
         const v = e.target.value;
         if (field.scope === "character") applyCharacterValue(field, v);
