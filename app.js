@@ -1,8 +1,9 @@
-// BooBly v1_2_9 — responsive glass UI, safer persistence, better JSON tools, preset images, unified outputs.
+// BooBly v1_3_0 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
 
 const state = {
   db: null,
   prompts: null,
+  master: null,
 
   rawJsonText: "",
   parsedJson: null,
@@ -12,6 +13,12 @@ const state = {
 
   page: "home", // home | create | edit | optimize | settings
   lastPageBeforeSettings: "home",
+
+  // Edit UX (master-driven)
+  editMode: "guided", // guided | expert
+  applyScope: "this", // this | all | selected
+  activeCharacterIndex: 0,
+  selectedCharacterIds: [],
 
   theme: "light",
   wallpaper: null,
@@ -46,9 +53,10 @@ const STORAGE = {
   openOnGen: "boobly.openOnGenerate",
   draft: "boobly.draft.v1",
   page: "boobly.page",
+  master: "boobly.master",
 };
 
-const VERSION = "v1_2_9";
+const VERSION = "v1_3_0";
 
 
 /* --------------------------
@@ -904,6 +912,49 @@ function setByPath(obj, pathArr, value) {
   persistDraft();
 }
 
+/* --------------------------
+   Master-driven path helpers
+--------------------------- */
+function parseMasterPath(pathStr, characterIndex = 0) {
+  // Supports a limited wildcard: `characters[]`.
+  // Example: characters[].face.eyes.color -> ["characters", 0, "face","eyes","color"]
+  const parts = String(pathStr || "").split(".").filter(Boolean);
+  const segs = [];
+  for (const p of parts) {
+    if (p.endsWith("[]")) {
+      segs.push(p.slice(0, -2));
+      segs.push(characterIndex);
+    } else {
+      segs.push(p);
+    }
+  }
+  return segs;
+}
+
+function getByMasterPath(obj, pathStr, characterIndex = 0, fallback = "") {
+  const segs = parseMasterPath(pathStr, characterIndex);
+  return getByPath(obj, segs, fallback);
+}
+
+function setByMasterPath(obj, pathStr, value, characterIndex = 0) {
+  const segs = parseMasterPath(pathStr, characterIndex);
+  setByPath(obj, segs, value);
+}
+
+function deepEqual(a, b) {
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch { return a === b; }
+}
+
+function ensureOriginalBaseline() {
+  if (state.originalJson) return;
+  try {
+    state.originalJson = state.rawJsonText ? JSON.parse(state.rawJsonText) : JSON.parse(JSON.stringify(state.editableJson));
+  } catch {
+    state.originalJson = JSON.parse(JSON.stringify(state.editableJson));
+  }
+  persistDraft();
+}
+
 function currentSummaryFields() {
   const j = state.editableJson || {};
   return {
@@ -1347,85 +1398,404 @@ function editPage() {
     return el("div", { class: "screen" }, [card("Edit", [el("div", { class: "small" }, "No JSON loaded. Use Create → Import or preset.")])]);
   }
 
-  const previewImg = (() => {
-    const presets = presetsList();
-    const name = getByPath(state.editableJson, ["subject","identity","name"], "");
-    const p = presets.find((x) => x.name === name) || presets[0];
-    return p?.image || "icons/preset.png";
+  ensureOriginalBaseline();
+
+  const master = state.master;
+  const hasCanonical = !!(state.editableJson && (state.editableJson.characters || state.editableJson.scene || state.editableJson.schema_version));
+
+  const convertToCanonical = () => {
+    const j = state.editableJson || {};
+    // Minimal legacy → canonical conversion (non-destructive: stores source in notes.unmapped)
+    const out = {
+      schema_version: master?.meta?.canonical_version || "1.3.0",
+      scene: {},
+      characters: [],
+      style: {},
+      technical: {},
+      notes: { unmapped: {}, source_text: "", adapter_log: [] },
+    };
+    out.notes.unmapped._source = JSON.parse(JSON.stringify(j));
+    const c0 = { id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())), name: "Character 1" };
+
+    // common legacy paths in existing presets
+    const legacyName = getByPath(j, ["subject","identity","name"], "");
+    if (legacyName) c0.name = legacyName;
+    const hairColor = getByPath(j, ["subject","hair","color"], "");
+    if (hairColor) c0.hair = { ...(c0.hair||{}), color: hairColor };
+    const hairStyle = getByPath(j, ["subject","hair","style"], "");
+    if (hairStyle) c0.hair = { ...(c0.hair||{}), style: hairStyle };
+    const eyeColor = getByPath(j, ["subject","eyes","color"], "");
+    if (eyeColor) c0.face = { ...(c0.face||{}), eyes: { ...(c0.face?.eyes||{}), color: eyeColor } };
+    const freckles = getByPath(j, ["subject","skin","freckles"], "");
+    if (freckles) c0.face = { ...(c0.face||{}), freckles: !/^none/i.test(String(freckles)) };
+    const makeup = getByPath(j, ["subject","eyes","makeup"], "");
+    if (makeup) c0.face = { ...(c0.face||{}), makeup: { style: String(makeup) } };
+    const height = getByPath(j, ["subject","identity","height_cm"], null);
+    if (typeof height === "number") c0.body = { ...(c0.body||{}), height_cm: height };
+    const outfit = getByPath(j, ["clothing","outfit_type"], "") || getByPath(j, ["clothing"], "");
+    if (outfit) c0.outfit = { description: String(outfit) };
+
+    // scene-ish legacy
+    const env = getByPath(j, ["image_metadata","environment","location"], "");
+    if (env) out.scene.location = env;
+    const light = getByPath(j, ["image_metadata","lighting","type"], "");
+    if (light) out.scene.lighting = { style: String(light) };
+    const framing = getByPath(j, ["composition","framing"], "");
+    if (framing) out.scene.camera = { ...(out.scene.camera||{}), shot: String(framing) };
+
+    out.characters.push(c0);
+    state.editableJson = out;
+    state.rawJsonText = JSON.stringify(out, null, 2);
+    state.originalJson = JSON.parse(JSON.stringify(out));
+    persistDraft();
+    toast("Converted to Canonical v1.3.0");
+    rerender();
+  };
+
+  const characters = Array.isArray(state.editableJson?.characters) ? state.editableJson.characters : [];
+  const characterCount = characters.length;
+  const activeIdx = Math.max(0, Math.min(state.activeCharacterIndex || 0, Math.max(0, characterCount - 1)));
+  state.activeCharacterIndex = activeIdx;
+
+  const changedFields = (() => {
+    if (!master?.fields || !state.originalJson) return [];
+    const guidedFields = master.fields.filter((f) => (f.visibility?.modes || []).includes("guided"));
+    const out = [];
+    for (const f of guidedFields) {
+      if (f.scope === "character") {
+        const indices = characterCount ? [...Array(characterCount).keys()] : [0];
+        for (const idx of indices) {
+          const cur = getByMasterPath(state.editableJson, f.path, idx, null);
+          const orig = getByMasterPath(state.originalJson, f.path, idx, null);
+          if (!deepEqual(cur, orig)) out.push({ field: f, idx, cur, orig });
+        }
+      } else {
+        const cur = getByMasterPath(state.editableJson, f.path, 0, null);
+        const orig = getByMasterPath(state.originalJson, f.path, 0, null);
+        if (!deepEqual(cur, orig)) out.push({ field: f, idx: null, cur, orig });
+      }
+    }
+    return out;
   })();
 
-  const view = currentSummaryFields();
+  const openReviewChanges = () => {
+    if (!changedFields.length) return toast("No changes");
+    const rows = changedFields.map(({ field, idx, cur, orig }) => {
+      const who = (idx === null) ? "" : ` • ${characters[idx]?.name || `Character ${idx+1}`}`;
+      const left = el("div", { style: "min-width:0" }, [
+        el("div", { style: "font-weight:900" }, field.label + who),
+        el("div", { class: "small" }, field.id),
+      ]);
+      const mid = el("div", { class: "small", style: "max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" }, `${String(orig ?? "—")} → ${String(cur ?? "—")}`);
+      const undo = el("button", { class: "btn" }, "Undo");
+      undo.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (idx === null) setByMasterPath(state.editableJson, field.path, orig, 0);
+        else setByMasterPath(state.editableJson, field.path, orig, idx);
+        persistDraft();
+        rerender();
+      });
+      return el("div", { class: "settingsRow" }, [left, mid, undo]);
+    });
+    openModal(el("div", {}, [
+      el("div", { class: "modalHeader" }, [
+        el("div", { class: "modalTitle" }, `Review Changes (${changedFields.length})`),
+        el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
+      ]),
+      hr(),
+      ...rows,
+    ]));
+  };
 
-  const content = el("div", { class: "card" }, [
-    el("div", { class: "cardBody" }, [
-      (() => {
-        const file = el("input", { type:"file", accept:"image/*", style:"display:none" });
-        file.addEventListener("change", async (e) => {
-          const f = e.target.files?.[0];
-          if (!f) return;
-          const dataUrl = await new Promise((res) => {
-            const r = new FileReader();
-            r.onload = () => res(r.result);
-            r.readAsDataURL(f);
+  const modeSeg = el("div", { class: "seg" }, [
+    el("button", { class: state.editMode === "guided" ? "active" : "", onclick: (e) => { e.preventDefault(); state.editMode = "guided"; persistDraft(); rerender(); } }, "Guided"),
+    el("button", { class: state.editMode === "expert" ? "active" : "", onclick: (e) => { e.preventDefault(); state.editMode = "expert"; persistDraft(); rerender(); } }, "Expert"),
+  ]);
+
+  const scopeSelector = (() => {
+    if (!characterCount) return null;
+    const sel = el("select", { onchange: (e) => { state.activeCharacterIndex = Number(e.target.value)||0; persistDraft(); rerender(); } });
+    characters.forEach((c, i) => sel.appendChild(el("option", { value: String(i) }, c?.name || `Character ${i+1}`)));
+    sel.value = String(activeIdx);
+    return el("div", { style: "display:flex;gap:8px;align-items:center" }, [
+      el("div", { class: "small", style: "white-space:nowrap" }, "Character"),
+      sel,
+    ]);
+  })();
+
+  const applyScopeSelector = (() => {
+    if (characterCount <= 1) return null;
+    const s = el("select", { onchange: (e) => { state.applyScope = e.target.value; persistDraft(); rerender(); } });
+    [
+      ["this","This"],
+      ["all","All"],
+      ["selected","Selected…"],
+    ].forEach(([v, t]) => s.appendChild(el("option", { value: v }, t)));
+    s.value = state.applyScope;
+    s.addEventListener("change", () => {
+      if (state.applyScope === "selected") {
+        // open a simple selector
+        const checks = characters.map((c, i) => {
+          const id = c?.id || String(i);
+          const cb = el("input", { type:"checkbox" });
+          cb.checked = state.selectedCharacterIds.includes(id);
+          cb.addEventListener("change", () => {
+            const set = new Set(state.selectedCharacterIds);
+            if (cb.checked) set.add(id); else set.delete(id);
+            state.selectedCharacterIds = [...set];
+            persistDraft();
           });
-          // update current preset image if known; else match by name
-          const presets = presetsList();
-          const pid = state.currentPresetId;
-          if (pid) updatePresetImage(pid, dataUrl);
-          else {
-            const name = getByPath(state.editableJson, ["subject","identity","name"], "");
-            const p = presets.find((x) => x.name === name);
-            if (p) updatePresetImage(p.id, dataUrl);
-          }
-          toast("Preset image set");
+          return el("div", { class:"settingsRow" }, [
+            el("div", {}, c?.name || `Character ${i+1}`),
+            el("div", {}, cb),
+          ]);
+        });
+        openModal(el("div", {}, [
+          el("div", { class:"modalHeader" }, [
+            el("div", { class:"modalTitle" }, "Select characters"),
+            el("button", { class:"btn", onclick: () => closeTopModal() }, "Done"),
+          ]),
+          hr(),
+          ...checks,
+        ]));
+      }
+    });
+    return el("div", { style: "display:flex;gap:8px;align-items:center" }, [
+      el("div", { class: "small", style: "white-space:nowrap" }, "Apply"),
+      s,
+    ]);
+  })();
+
+  function applyCharacterValue(field, value) {
+    if (state.applyScope === "all") {
+      for (let i = 0; i < characterCount; i++) setByMasterPath(state.editableJson, field.path, value, i);
+      return;
+    }
+    if (state.applyScope === "selected") {
+      const ids = new Set(state.selectedCharacterIds);
+      for (let i = 0; i < characterCount; i++) {
+        const id = characters[i]?.id || String(i);
+        if (ids.has(id)) setByMasterPath(state.editableJson, field.path, value, i);
+      }
+      return;
+    }
+    setByMasterPath(state.editableJson, field.path, value, activeIdx);
+  }
+
+  function fieldRow(field) {
+    const idx = (field.scope === "character") ? activeIdx : 0;
+    const cur = getByMasterPath(state.editableJson, field.path, idx, "");
+    const orig = getByMasterPath(state.originalJson, field.path, idx, "");
+    const isDefault = deepEqual(cur, orig);
+
+    const chip = el("span", { class:"small", style:`padding:4px 8px;border-radius:999px;${isDefault?"opacity:.8":"font-weight:900"}` },
+      isDefault ? `Default (keep: ${String(orig ?? "—")})` : `Overridden (${String(cur ?? "—")})`
+    );
+
+    const resetBtn = el("button", { class:"btn" }, "↩ Reset");
+    resetBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (field.scope === "character") applyCharacterValue(field, orig);
+      else setByMasterPath(state.editableJson, field.path, orig, 0);
+      persistDraft();
+      rerender();
+    });
+
+    const control = (() => {
+      const c = field.control || { kind: "input" };
+      if (c.kind === "readonly") return el("div", { class:"small" }, String(cur || "—"));
+
+      if (c.kind === "segmented") {
+        const opts = (typeof c.options === "string" && c.options.startsWith("vocab."))
+          ? (master?.vocab?.[c.options.slice(6)] || [])
+          : (Array.isArray(c.options) ? c.options : []);
+        const wrap = el("div", { class:"seg" }, []);
+        for (const o of opts) {
+          const active = (String(cur) === String(o)) || (isDefault && String(o).toLowerCase() === "no" && cur === orig);
+          const b = el("button", { class: active ? "active" : "" }, String(o));
+          b.addEventListener("click", (e) => {
+            e.preventDefault();
+            const v = (String(o).toLowerCase() === "no") ? false : true;
+            if (field.scope === "character") applyCharacterValue(field, v);
+            else setByMasterPath(state.editableJson, field.path, v, 0);
+            persistDraft();
+            rerender();
+          });
+          wrap.appendChild(b);
+        }
+        return wrap;
+      }
+
+      if (c.kind === "select") {
+        const src = c.source || "";
+        const opts = (typeof src === "string" && src.startsWith("vocab."))
+          ? (master?.vocab?.[src.slice(6)] || [])
+          : [];
+        const s = el("select", {});
+        s.appendChild(el("option", { value: "__DEFAULT__" }, `Default (keep: ${String(orig ?? "—")})`));
+        for (const o of opts) s.appendChild(el("option", { value: String(o) }, String(o)));
+        s.value = isDefault ? "__DEFAULT__" : String(cur);
+        s.addEventListener("change", (e) => {
+          const v = e.target.value;
+          const val = (v === "__DEFAULT__") ? orig : v;
+          if (field.scope === "character") applyCharacterValue(field, val);
+          else setByMasterPath(state.editableJson, field.path, val, 0);
+          persistDraft();
           rerender();
         });
-        const img = el("img", { src: previewImg, alt:"Preview", class:"clickableImg", style:"width:100%;height:220px;object-fit:cover;border-radius:18px;display:block;" });
-        img.addEventListener("click", () => file.click());
-        return el("div", {}, [img, file]);
-      })(),
-      hr(),
-      labelField("Name", inputText(view.name, (v) => { setByPath(state.editableJson, ["subject", "identity", "name"], v); })),
-      labelField("Gender", el("input", { type:"text", value:"Female", disabled:"true" })),
-      labelField("Height (cm)", inputText(String(view.height || 155), (v) => { const n = Number(v); if (!Number.isNaN(n)) setByPath(state.editableJson, ["subject","identity","height_cm"], n); })),
-      labelField("Hair Color", selectFromDb("subject.hair.color", getByPath(state.editableJson, ["subject","hair","color"], ""), (v) => { setByPath(state.editableJson, ["subject","hair","color"], v); })),
-      labelField("Hair Style", selectFromDb("subject.hair.style", getByPath(state.editableJson, ["subject","hair","style"], ""), (v) => { setByPath(state.editableJson, ["subject","hair","style"], v); })),
-      labelField("Eye Color", selectFromDb("subject.eyes.color", getByPath(state.editableJson, ["subject","eyes","color"], ""), (v) => { setByPath(state.editableJson, ["subject","eyes","color"], v); })),
-      labelField("Freckles", el("div", { class: "row" }, [
-        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("heavy") ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "heavy freckles"); rerender(); } }, "Heavy"),
-        el("button", { class: "btn" + ((getByPath(state.editableJson, ["subject","skin","freckles"], "")).includes("light") ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "light freckles"); rerender(); } }, "Light"),
-        el("button", { class: "btn" + (/^none/i.test(getByPath(state.editableJson, ["subject","skin","freckles"], "")) ? " primary" : ""), onclick: (e) => { e.preventDefault(); e.stopPropagation(); setByPath(state.editableJson, ["subject","skin","freckles"], "none"); rerender(); } }, "None"),
-      ])),
-      hr(),
+        return s;
+      }
 
-      labelField("Makeup Level", (() => {
-        const cur = getByPath(state.editableJson, ["subject","eyes","makeup"], "subtle natural tones");
-        const set = (v) => { setByPath(state.editableJson, ["subject","eyes","makeup"], v); };
-        return el("div", { class: "seg" }, [
-          el("button", { class: cur.toLowerCase().includes("natural") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("subtle natural tones"); rerender(); } }, "Natural"),
-          el("button", { class: cur.toLowerCase().includes("medium") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("medium glam makeup"); rerender(); } }, "Medium"),
-          el("button", { class: cur.toLowerCase().includes("glam") ? "active" : "", onclick: (e) => { e.preventDefault(); e.stopPropagation(); set("glam makeup"); rerender(); } }, "Glam"),
-        ]);
-      })()),
-      labelField("Framing", selectFromDb("composition.framing", getByPath(state.editableJson, ["composition","framing"], ""), (v) => { setByPath(state.editableJson, ["composition","framing"], v); persistDraft(); rerender(); })),
-      labelField("Lighting", selectFromDb("image_metadata.lighting.type", getByPath(state.editableJson, ["image_metadata","lighting","type"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","lighting","type"], v); persistDraft(); rerender(); })),
-      labelField("Environment", selectFromDb("image_metadata.environment.location", getByPath(state.editableJson, ["image_metadata","environment","location"], ""), (v) => { setByPath(state.editableJson, ["image_metadata","environment","location"], v); persistDraft(); rerender(); })),
-      labelField("Outfit Type", selectFromDb("clothing.outfit_type", getByPath(state.editableJson, ["clothing","outfit_type"], ""), (v) => { setByPath(state.editableJson, ["clothing","outfit_type"], v); persistDraft(); rerender(); })),
-
-      hr(),
-      el("div", { class: "row" }, [
-        el("button", { class: "btn", onclick: async () => { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); } }, "Copy JSON"),
-        el("button", { class: "btn primary", onclick: () => {
-          const name = prompt("Preset name?") || (getByPath(state.editableJson, ["subject","identity","name"], "") || `Preset ${new Date().toLocaleString()}`);
-          savePreset(name, state.editableJson);
-          toast("Saved preset");
+      if (c.kind === "slider") {
+        const i = el("input", { type:"range", min:c.min ?? 0, max:c.max ?? 100, step:c.step ?? 1, value: Number(cur ?? orig ?? 0) });
+        const valLab = el("div", { class:"small" }, String(cur ?? orig ?? 0) + (c.unit || ""));
+        i.addEventListener("input", (e) => { valLab.textContent = String(e.target.value) + (c.unit || ""); });
+        i.addEventListener("change", (e) => {
+          const n = Number(e.target.value);
+          if (field.scope === "character") applyCharacterValue(field, n);
+          else setByMasterPath(state.editableJson, field.path, n, 0);
+          persistDraft();
           rerender();
-        } }, "Save Preset"),
+        });
+        return el("div", { style:"display:flex;gap:10px;align-items:center" }, [i, valLab]);
+      }
+
+      if (c.kind === "stepper") {
+        const i = el("input", { type:"number", min:c.min, max:c.max, step:c.step || 1, value: String(cur ?? orig ?? "") });
+        i.addEventListener("input", (e) => {
+          const n = Number(e.target.value);
+          if (Number.isNaN(n)) return;
+          if (field.scope === "character") applyCharacterValue(field, n);
+          else setByMasterPath(state.editableJson, field.path, n, 0);
+          persistDraft();
+        });
+        return i;
+      }
+
+      if (c.kind === "textarea") {
+        const t = el("textarea", { rows: c.rows || 3 }, String(cur ?? orig ?? ""));
+        t.addEventListener("input", (e) => {
+          const v = e.target.value;
+          if (field.scope === "character") applyCharacterValue(field, v);
+          else setByMasterPath(state.editableJson, field.path, v, 0);
+          persistDraft();
+        });
+        return t;
+      }
+
+      if (c.kind === "list_editor") {
+        const arr = Array.isArray(cur) ? cur : (Array.isArray(orig) ? orig : []);
+        const list = el("div", {}, []);
+        const render = () => {
+          list.innerHTML = "";
+          arr.forEach((item, ix) => {
+            const inp = el("input", { type:"text", value: String(item || "") });
+            inp.addEventListener("input", (e) => {
+              arr[ix] = e.target.value;
+              if (field.scope === "character") applyCharacterValue(field, arr);
+              else setByMasterPath(state.editableJson, field.path, arr, 0);
+              persistDraft();
+            });
+            const del = el("button", { class:"btn" }, "✕");
+            del.addEventListener("click", (e) => {
+              e.preventDefault();
+              arr.splice(ix,1);
+              if (field.scope === "character") applyCharacterValue(field, arr);
+              else setByMasterPath(state.editableJson, field.path, arr, 0);
+              persistDraft();
+              render();
+            });
+            list.appendChild(el("div", { class:"row", style:"gap:8px" }, [inp, del]));
+          });
+        };
+        render();
+        const add = el("button", { class:"btn" }, c.add_label || "Add");
+        add.addEventListener("click", (e) => {
+          e.preventDefault();
+          arr.push("");
+          if (field.scope === "character") applyCharacterValue(field, arr);
+          else setByMasterPath(state.editableJson, field.path, arr, 0);
+          persistDraft();
+          render();
+        });
+        return el("div", {}, [list, add]);
+      }
+
+      // default: input
+      const i = el("input", { type:"text", placeholder: c.placeholder || "", value: String(cur ?? orig ?? "") });
+      i.addEventListener("input", (e) => {
+        const v = e.target.value;
+        if (field.scope === "character") applyCharacterValue(field, v);
+        else setByMasterPath(state.editableJson, field.path, v, 0);
+        persistDraft();
+      });
+      return i;
+    })();
+
+    return el("div", { style:"margin-bottom:12px" }, [
+      el("div", { style:"display:flex;justify-content:space-between;gap:10px;align-items:center" }, [
+        el("div", { style:"font-weight:900" }, field.label),
+        el("div", { style:"display:flex;gap:8px;align-items:center" }, [chip, resetBtn]),
       ]),
+      el("div", { style:"margin-top:8px" }, control),
+      field.help_text ? el("div", { class:"small", style:"margin-top:6px;opacity:.85" }, field.help_text) : null,
+    ].filter(Boolean));
+  }
+
+  const guidedContent = (() => {
+    if (!master?.fields) {
+      return card("Guided Editor", [
+        el("div", { class:"small" }, "Master file not loaded. Use Expert mode."),
+      ]);
+    }
+    if (!hasCanonical) {
+      return card("Guided Editor", [
+        el("div", { class:"small" }, "This JSON is not in canonical format. Convert to Canonical to use Guided mode, or use Expert mode."),
+        hr(),
+        el("button", { class:"btn primary", onclick: convertToCanonical }, "Convert → Canonical (v1.3.0)"),
+      ]);
+    }
+
+    const guidedFields = master.fields
+      .filter((f) => (f.visibility?.modes || []).includes("guided"))
+      .sort((a,b) => (a.category||"").localeCompare(b.category||"") || (a.order||0)-(b.order||0));
+
+    // group by category
+    const byCat = new Map();
+    for (const f of guidedFields) {
+      const c = f.category || "Advanced";
+      if (!byCat.has(c)) byCat.set(c, []);
+      byCat.get(c).push(f);
+    }
+    const catOrder = (master.categories || []).slice().sort((a,b)=> (a.order||0)-(b.order||0)).map(x=>x.id);
+    const cats = [...byCat.keys()].sort((a,b)=> (catOrder.indexOf(a)===-1?999:catOrder.indexOf(a)) - (catOrder.indexOf(b)===-1?999:catOrder.indexOf(b)));
+
+    const cards = cats.map((c) => {
+      const list = byCat.get(c) || [];
+      return card(c, list.map(fieldRow));
+    });
+    return el("div", {}, cards);
+  })();
+
+  const topBar = card("Editor", [
+    el("div", { class:"row", style:"justify-content:space-between;align-items:center;flex-wrap:wrap" }, [
+      modeSeg,
+      scopeSelector,
+      applyScopeSelector,
+      el("button", { class:"btn", onclick: openReviewChanges }, `Review (${changedFields.length})`),
+    ].filter(Boolean)),
+    hr(),
+    el("div", { class:"row" }, [
+      el("button", { class:"btn", onclick: async () => { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); } }, "Copy JSON"),
+      el("button", { class:"btn primary", onclick: () => downloadJson("boobly-edited.json", state.editableJson) }, "Download JSON"),
     ]),
   ]);
 
-  return el("div", { class: "screen" }, [content, genericKeyEditorCard()].filter(Boolean));
+  const body = (state.editMode === "expert")
+    ? el("div", {}, [card("Expert Mode", [el("div", { class:"small" }, "Fallback editor for any JSON. Search, edit, reset to Default." )]), genericKeyEditorCard()].filter(Boolean))
+    : guidedContent;
+
+  return el("div", { class: "screen" }, [topBar, body].filter(Boolean));
 }
 
 function pickUseCasePrompt(tab) {
@@ -1712,6 +2082,11 @@ async function init() {
   state.db = dbLS || (await fetchJson("database.json"));
   rebuildDbIndex();
   state.prompts = prLS || (await fetchJson("prompts.json"));
+
+  // Master file (Option A) — drives Guided/Expert editor.
+  const mLS = loadLS(STORAGE.master, null);
+  state.master = mLS || (await fetchJson("master_file_v1_3_0.json").catch(() => null));
+  if (state.master) saveLS(STORAGE.master, state.master);
 
   const clLS = loadLS(STORAGE.changelog, null);
   state.changelog = clLS || (await fetchJson("changelog.json").catch(() => DEFAULT_CHANGELOG));
