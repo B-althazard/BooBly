@@ -164,6 +164,18 @@
         "Canonical conversion button for legacy JSON (non-destructive; source preserved in notes.unmapped)",
         "Service worker cache bump + master file precached"
       ]
+    },
+    {
+      "version": "1.4.0-Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "UI overhaul: import/edit/export navigation and redesigned layout.",
+        "Mobile-first spacing system: consistent padding, button sizing, touch targets.",
+        "Guided editor rebuilt with collapsible category cards and standardized field rows.",
+        "Edit toolbar is sticky with change count, review changes, and export shortcut.",
+        "Expert mode redesigned as split workbench (categories/keys left, inspector right) with filters and safe reset.",
+        "Console/error boxes fixed height with internal scroll (no layout jumps)."
+      ]
     }
   ]
 }

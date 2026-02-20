@@ -11,8 +11,8 @@ const state = {
   importError: null,
   correctedJsonText: null,
 
-  page: "home", // home | create | edit | optimize | settings
-  lastPageBeforeSettings: "home",
+  page: "import", // import | edit | export | settings
+  lastPageBeforeSettings: "import",
 
   // Edit UX (master-driven)
   editMode: "guided", // guided | expert
@@ -56,7 +56,7 @@ const STORAGE = {
   master: "boobly.master",
 };
 
-const VERSION = "v1_3_0";
+const VERSION = "v1_4_0_Alpha";
 
 
 /* --------------------------
@@ -603,31 +603,58 @@ function header(title) {
 
 function tabs() {
   const mk = (p, ico, lbl) =>
-    el(
-      "div",
+    el("button",
       {
-        class: "tab" + (state.page === p ? " active" : ""),
-        onclick: () => {
-          state.page = p;
-          persistDraft();
-          rerender();
-        },
+        class: "tabBtn" + (state.page === p ? " active" : ""),
+        onclick: () => { state.page = p; persistDraft(); rerender(); },
       },
-      [el("div", { class: "ico" }, ico), el("div", { class: "lbl" }, lbl)]
+      [el("span", { class: "ico" }, ico), el("span", { class: "lbl" }, lbl)]
     );
 
   return el("div", { class: "tabs" }, [
-    el("div", { class: "tabRow" }, [
-      mk("home", "⌂", "Home"),
-      mk("create", "▦", "Create"),
-      mk("edit", "🗎", "Edit"),
-      mk("optimize", "⚡", "Optimize"),
-    ]),
+    mk("import", "⬆️", "Import"),
+    mk("edit", "✏️", "Edit"),
+    mk("export", "📤", "Export"),
   ]);
 }
 
 function card(title, bodyNodes) {
   return el("div", { class: "card" }, [el("div", { class: "cardBody" }, [el("div", { class: "cardTitle" }, title), ...bodyNodes])]);
+}
+
+function collapsibleCard(opts) {
+  const { id, title, subtitle, rightBadge, defaultOpen = true, bodyNodes = [] } = (opts || {});
+  state.collapsed = state.collapsed || {};
+  const isOpen = (state.collapsed[id] === undefined) ? defaultOpen : !state.collapsed[id];
+
+  const details = el("details", { class: "cCard" });
+  if (isOpen) details.setAttribute("open", "");
+
+  const sum = el("summary", { class: "cCardHead" }, [
+    el("div", { class: "cCardHeadMain" }, [
+      el("div", { class: "cCardTitle" }, title || ""),
+      subtitle ? el("div", { class: "cCardSub" }, subtitle) : null,
+    ].filter(Boolean)),
+    rightBadge ? el("div", { class: "cCardBadge" }, rightBadge) : null,
+  ].filter(Boolean));
+
+  details.appendChild(sum);
+  const body = el("div", { class: "cCardBody" }, bodyNodes);
+  details.appendChild(body);
+
+  details.addEventListener("toggle", () => {
+    state.collapsed[id] = !details.open;
+    persistDraft();
+  });
+
+  return details;
+}
+
+function toolbar(children=[]) { return el("div", { class: "toolbar" }, children); }
+function chip(text, kind="neutral") { return el("span", { class: "chip " + kind }, text); }
+function iconTextBtn(text, cls, onClick) {
+  const b = el("button", { class: cls || "btn", onclick: (e) => { e.preventDefault(); onClick && onClick(); } }, text);
+  return b;
 }
 function hr() { return el("div", { class: "hr" }); }
 
@@ -748,7 +775,7 @@ function openPresetPicker() {
   const grid = presets.length
     ? el("div", { class: "presetGrid" }, presets.map((p) => presetTile(p, () => {
         loadPreset(p);
-        state.page = "create";
+        state.page = "import";
         persistDraft();
         rerender();
         document.querySelector(".modalBack")?.remove();
@@ -978,7 +1005,7 @@ function trKV(key, value, hasSwitch = false, switchOn = false, onToggle = null) 
   return el("tr", {}, [el("td", { class: "kvKey" }, key), valCell]);
 }
 
-function createPage() {
+function importPage() {
   const presetsBtn = el("button", { class: "btn primary full", onclick: () => openPresetPicker() }, "Choose Preset");
   const importCodeBtn = el("button", { class: "btn soft", onclick: () => openImportModal() }, "{}  Import Code");
 
@@ -1283,115 +1310,188 @@ function genericKeyEditorCard() {
   }
 
   const inv = buildKeyInventory(state.editableJson);
-  const withCats = inv.map((x) => ({ ...x, category: categorizeKey(x) }));
+  const items = inv.map((x) => ({ ...x, category: categorizeKey(x) }));
 
-  const search = el("input", { type: "text", placeholder: "Search keys (path contains…)", value: state.keySearch || "" });
-  search.addEventListener("input", (e) => { state.keySearch = e.target.value; persistDraft(); rerender(); });
+  // Filters
+  state.expert = state.expert || { q:"", cat:"", onlyChanged:false, onlyDb:false, onlyFreeform:false, onlyObjArr:false, selectedPath:"" };
+  const q = (state.expert.q || "").trim().toLowerCase();
 
-  const q = (state.keySearch || "").trim().toLowerCase();
-  const filtered = q ? withCats.filter((x) => x.path.toLowerCase().includes(q) || x.canonical.toLowerCase().includes(q)) : withCats;
+  const filtered0 = q
+    ? items.filter((x) => x.path.toLowerCase().includes(q) || x.canonical.toLowerCase().includes(q))
+    : items;
 
-  // group by category
+  const filtered = filtered0.filter((x) => {
+    const orig = getAtSegments(state.originalJson, x.segs);
+    const cur = getAtSegments(state.editableJson, x.segs);
+    const entry = dbEntryForPath(x.canonical);
+    const isChanged = JSON.stringify(orig) !== JSON.stringify(cur);
+    const isDb = !!(entry?.values && entry.values.length);
+    const isScalarLeaf = isScalar(cur);
+    const isFreeform = isScalarLeaf && !isDb;
+    const isObjArr = !isScalarLeaf || Array.isArray(cur) || (cur && typeof cur === "object");
+
+    if (state.expert.onlyChanged && !isChanged) return false;
+    if (state.expert.onlyDb && !isDb) return false;
+    if (state.expert.onlyFreeform && !isFreeform) return false;
+    if (state.expert.onlyObjArr && !isObjArr) return false;
+    return true;
+  });
+
+  // Group by category
   const byCat = new Map();
-  for (const item of filtered) {
-    const c = item.category || "Uncategorized";
+  for (const it of filtered) {
+    const c = it.category || "Uncategorized";
     if (!byCat.has(c)) byCat.set(c, []);
-    byCat.get(c).push(item);
+    byCat.get(c).push(it);
   }
-  const cats = [...byCat.keys()].sort((a, b) => a.localeCompare(b));
+  const cats = [...byCat.keys()].sort((a,b)=>a.localeCompare(b));
 
-  const renderRow = (item) => {
-    const orig = getAtSegments(state.originalJson, item.segs);
-    const cur = getAtSegments(state.editableJson, item.segs);
-    const canon = item.canonical;
-    const entry = dbEntryForPath(canon);
-    const values = Array.isArray(entry?.values) ? entry.values : [];
-    const isLeafScalar = isScalar(cur);
+  if (!state.expert.cat || !byCat.has(state.expert.cat)) state.expert.cat = cats[0] || "Uncategorized";
 
-    const left = el("div", { style: "min-width:0" }, [
-      el("div", { style: "font-weight:900;word-break:break-word" }, item.path),
-      el("div", { class: "small" }, `${canon} • ${item.type}` + (entry?.description ? ` • ${entry.description}` : "")),
+  const activeItems = (byCat.get(state.expert.cat) || []).slice().sort((a,b)=>a.path.localeCompare(b.path));
+
+  // Selection
+  if (!state.expert.selectedPath || !activeItems.find((x)=>x.path===state.expert.selectedPath)) {
+    state.expert.selectedPath = activeItems[0]?.path || "";
+  }
+  const selected = activeItems.find((x)=>x.path===state.expert.selectedPath) || null;
+
+  const search = el("input", { type:"text", placeholder:"Search keys…", value: state.expert.q || "" });
+  search.addEventListener("input", (e)=>{ state.expert.q = e.target.value; persistDraft(); rerender(); });
+
+  const chipToggle = (label, key) => {
+    const on = !!state.expert[key];
+    const b = el("button", { class: "chipBtn" + (on ? " on":""), onclick: (e)=>{ e.preventDefault(); state.expert[key]=!on; persistDraft(); rerender(); } }, label);
+    return b;
+  };
+
+  const catList = el("div", { class:"catList" }, cats.map((c)=>{
+    const count = (byCat.get(c)||[]).length;
+    const b = el("button", { class:"catBtn" + (state.expert.cat===c?" active":""), onclick:(e)=>{ e.preventDefault(); state.expert.cat=c; persistDraft(); rerender(); } }, [
+      el("span", { class:"catLbl" }, c),
+      el("span", { class:"catCount" }, String(count)),
+    ]);
+    return b;
+  }));
+
+  const keyList = el("div", { class:"keyList" }, activeItems.map((it)=>{
+    const orig = getAtSegments(state.originalJson, it.segs);
+    const cur = getAtSegments(state.editableJson, it.segs);
+    const changed = JSON.stringify(orig) !== JSON.stringify(cur);
+    const b = el("button", { class:"keyBtn" + (state.expert.selectedPath===it.path?" active":"") + (changed?" changed":""), onclick:(e)=>{ e.preventDefault(); state.expert.selectedPath=it.path; persistDraft(); rerender(); } }, [
+      el("div", { class:"keyBtnTitle" }, it.path),
+      el("div", { class:"keyBtnSub" }, it.canonical),
+    ]);
+    return b;
+  }));
+
+  const left = el("div", { class:"expertLeft" }, [
+    el("div", { class:"expertLeftHead" }, [
+      el("div", { class:"small", style:"font-weight:900" }, "Search"),
+      search,
+      el("div", { class:"chipRow" }, [
+        chipToggle("Changed","onlyChanged"),
+        chipToggle("DB","onlyDb"),
+        chipToggle("Freeform","onlyFreeform"),
+        chipToggle("Obj/Arr","onlyObjArr"),
+      ]),
+    ]),
+    el("div", { class:"expertLeftBody" }, [
+      el("div", { class:"small", style:"font-weight:900;margin-bottom:8px" }, "Categories"),
+      catList,
+      el("div", { class:"small", style:"font-weight:900;margin:12px 0 8px" }, "Keys"),
+      keyList,
+    ])
+  ]);
+
+  const inspector = (() => {
+    if (!selected) return el("div", { class:"expertRight" }, [
+      el("div", { class:"small" }, "No keys match the current filters.")
     ]);
 
-    const right = (() => {
-      const advancedBtn = el("button", { class: "btn" }, "Advanced");
-      advancedBtn.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        openAdvancedValueEditor({
-          title: `Edit: ${item.path}`,
-          currentValue: cur,
-          onSave: (v) => { setAtSegments(state.editableJson, item.segs, v); persistDraft(); },
-        });
-      });
+    const orig = getAtSegments(state.originalJson, selected.segs);
+    const cur = getAtSegments(state.editableJson, selected.segs);
+    const entry = dbEntryForPath(selected.canonical);
+    const values = Array.isArray(entry?.values) ? entry.values : [];
+    const scalar = isScalar(cur);
 
-      if (!isLeafScalar) {
-        const preview = el("div", { class: "small", style: "max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" }, JSON.stringify(cur));
-        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px" }, [preview, advancedBtn]);
+    const header = el("div", { class:"inspHead" }, [
+      el("div", { class:"inspTitle" }, selected.path),
+      el("div", { class:"inspMeta" }, [
+        chip(selected.type, "neutral"),
+        chip(selected.canonical, "neutral"),
+        (JSON.stringify(orig)!==JSON.stringify(cur)) ? chip("Changed", "warn") : chip("Default", "ok"),
+      ]),
+      entry?.description ? el("div", { class:"small" }, entry.description) : null,
+    ].filter(Boolean));
+
+    const reset = el("button", { class:"btn", onclick:(e)=>{ e.preventDefault(); setAtSegments(state.editableJson, selected.segs, orig); persistDraft(); rerender(); } }, "↩ Reset to Default");
+
+    const advanced = el("button", { class:"btn" }, "Advanced JSON…");
+    advanced.addEventListener("click", (e)=>{
+      e.preventDefault();
+      openAdvancedValueEditor({
+        title: `Edit: ${selected.path}`,
+        currentValue: cur,
+        onSave: (v)=>{ setAtSegments(state.editableJson, selected.segs, v); persistDraft(); rerender(); }
+      });
+    });
+
+    const editor = (() => {
+      if (!scalar) {
+        const preview = el("pre", { class:"jsonPreview" }, JSON.stringify(cur, null, 2));
+        return el("div", { class:"stack" }, [preview, el("div", { class:"row" }, [reset, advanced])]);
       }
 
       if (!values.length) {
-        // freeform input + default + advanced
-        const i = el("input", { type: "text", value: (cur ?? "") === "" ? "" : String(cur) });
-        i.addEventListener("input", (e) => { setAtSegments(state.editableJson, item.segs, e.target.value); persistDraft(); });
-        const defBtn = el("button", { class: "btn" }, "Default");
-        defBtn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setAtSegments(state.editableJson, item.segs, orig); persistDraft(); rerender(); });
-        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [i, defBtn, advancedBtn]);
+        const i = el("input", { type:"text", value: (cur ?? "") === null ? "" : String(cur ?? "") });
+        i.addEventListener("input", (e)=>{ setAtSegments(state.editableJson, selected.segs, e.target.value); persistDraft(); });
+        return el("div", { class:"stack" }, [
+          el("div", { class:"small" }, "Freeform value"),
+          i,
+          el("div", { class:"row" }, [reset, advanced]),
+        ]);
       }
 
       const s = el("select", {});
-      // Default option always first
       const defaultLabel = `Default (keep: ${isScalar(orig) ? String(orig) : valueType(orig)})`;
-      s.appendChild(el("option", { value: "__DEFAULT__" }, defaultLabel));
-      for (const o of values) s.appendChild(el("option", { value: o }, o));
-
-      // Set selection
-      const sameAsOrig = (JSON.stringify(cur) === JSON.stringify(orig));
+      s.appendChild(el("option", { value:"__DEFAULT__" }, defaultLabel));
+      for (const o of values) s.appendChild(el("option", { value:o }, o));
+      const sameAsOrig = JSON.stringify(cur) === JSON.stringify(orig);
       s.value = sameAsOrig ? "__DEFAULT__" : (values.includes(cur) ? cur : "__DEFAULT__");
-
-      s.addEventListener("change", (e) => {
+      s.addEventListener("change", (e)=>{
         const v = e.target.value;
-        if (v === "__DEFAULT__") setAtSegments(state.editableJson, item.segs, orig);
-        else setAtSegments(state.editableJson, item.segs, v);
+        if (v==="__DEFAULT__") setAtSegments(state.editableJson, selected.segs, orig);
+        else setAtSegments(state.editableJson, selected.segs, v);
         persistDraft();
         rerender();
       });
-
-      return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [s, advancedBtn]);
+      return el("div", { class:"stack" }, [
+        el("div", { class:"small" }, "DB-supported values"),
+        s,
+        el("div", { class:"row" }, [reset, advanced]),
+      ]);
     })();
 
-    return el("div", { class: "settingsRow", style: "align-items:flex-start" }, [
-      left,
-      el("div", { style: "flex:0 0 auto" }, right),
+    return el("div", { class:"expertRight" }, [
+      header,
+      hr(),
+      editor,
     ]);
-  };
+  })();
 
-  const catNodes = cats.map((c) => {
-    const items = byCat.get(c) || [];
-    const key = "cat:" + c;
-    const open = !!state.keyEditorExpanded?.[key];
-    const headerBtn = el("button", { class: "btn", style: "width:100%;justify-content:space-between" }, [
-      el("span", {}, `${c} (${items.length})`),
-      el("span", { class: "small" }, open ? "Hide" : "Show"),
-    ]);
-    headerBtn.addEventListener("click", () => {
-      state.keyEditorExpanded = state.keyEditorExpanded || {};
-      state.keyEditorExpanded[key] = !state.keyEditorExpanded[key];
-      persistDraft();
-      rerender();
-    });
+  const workbench = el("div", { class:"expertWorkbench" }, [left, inspector]);
 
-    const body = open ? el("div", { style: "margin-top:10px" }, items.map(renderRow)) : null;
-    return el("div", { style: "margin-bottom:12px" }, [headerBtn, body].filter(Boolean));
-  });
-
-  return card("Key Editor (Any JSON)", [
-    el("div", { class: "small" }, "Browse and edit imported JSON keys directly. Use Default to keep the original value. Advanced supports objects/arrays now."),
-    hr(),
-    search,
-    hr(),
-    ...catNodes,
+  return el("div", { class:"card" }, [
+    el("div", { class:"cardBody" }, [
+      el("div", { class:"cardTitle" }, "Expert Mode"),
+      el("div", { class:"small" }, "Fallback editor for any JSON. Search, filter, inspect, and edit one key at a time."),
+      hr(),
+      workbench,
+    ])
   ]);
 }
+
 
 function editPage() {
   if (!state.editableJson) {
@@ -1588,9 +1688,7 @@ function editPage() {
     const orig = getByMasterPath(state.originalJson, field.path, idx, "");
     const isDefault = deepEqual(cur, orig);
 
-    const chip = el("span", { class:"small", style:`padding:4px 8px;border-radius:999px;${isDefault?"opacity:.8":"font-weight:900"}` },
-      isDefault ? `Default (keep: ${String(orig ?? "—")})` : `Overridden (${String(cur ?? "—")})`
-    );
+    const chipNode = chip(isDefault ? `Default (keep: ${String(orig ?? "—")})` : `Overridden (${String(cur ?? "—")})`, isDefault ? "ok" : "warn");
 
     const resetBtn = el("button", { class:"btn" }, "↩ Reset");
     resetBtn.addEventListener("click", (e) => {
@@ -1732,14 +1830,16 @@ function editPage() {
       return i;
     })();
 
-    return el("div", { style:"margin-bottom:12px" }, [
-      el("div", { style:"display:flex;justify-content:space-between;gap:10px;align-items:center" }, [
-        el("div", { style:"font-weight:900" }, field.label),
-        el("div", { style:"display:flex;gap:8px;align-items:center" }, [chip, resetBtn]),
+    return el("div", { class:"fieldRow" }, [
+      el("div", { class:"fieldLeft" }, [
+        el("div", { class:"fieldLabel" }, field.label),
+        field.help_text ? el("div", { class:"small fieldHelp" }, field.help_text) : null,
+      ].filter(Boolean)),
+      el("div", { class:"fieldRight" }, [
+        el("div", { class:"fieldActions" }, [chipNode, resetBtn]),
+        control,
       ]),
-      el("div", { style:"margin-top:8px" }, control),
-      field.help_text ? el("div", { class:"small", style:"margin-top:6px;opacity:.85" }, field.help_text) : null,
-    ].filter(Boolean));
+    ]);
   }
 
   const guidedContent = (() => {
@@ -1752,43 +1852,57 @@ function editPage() {
       return card("Guided Editor", [
         el("div", { class:"small" }, "This JSON is not in canonical format. Convert to Canonical to use Guided mode, or use Expert mode."),
         hr(),
-        el("button", { class:"btn primary", onclick: convertToCanonical }, "Convert → Canonical (v1.3.0)"),
+        el("button", { class:"btn primary", onclick: convertToCanonical }, "Convert → Canonical"),
       ]);
     }
 
     const guidedFields = master.fields
       .filter((f) => (f.visibility?.modes || []).includes("guided"))
+      .slice()
       .sort((a,b) => (a.category||"").localeCompare(b.category||"") || (a.order||0)-(b.order||0));
 
-    // group by category
+    // category order from master.categories, fallback alphabetical
+    const catOrder = new Map();
+    (master.categories || []).forEach((c, i) => catOrder.set(c.id, c.order ?? (i*10)));
+
     const byCat = new Map();
     for (const f of guidedFields) {
       const c = f.category || "Advanced";
       if (!byCat.has(c)) byCat.set(c, []);
       byCat.get(c).push(f);
     }
-    const catOrder = (master.categories || []).slice().sort((a,b)=> (a.order||0)-(b.order||0)).map(x=>x.id);
-    const cats = [...byCat.keys()].sort((a,b)=> (catOrder.indexOf(a)===-1?999:catOrder.indexOf(a)) - (catOrder.indexOf(b)===-1?999:catOrder.indexOf(b)));
 
-    const cards = cats.map((c) => {
-      const list = byCat.get(c) || [];
-      return card(c, list.map(fieldRow));
+    const cats = [...byCat.keys()].sort((a,b) => (catOrder.get(a) ?? 9999) - (catOrder.get(b) ?? 9999) || a.localeCompare(b));
+
+    const sections = cats.map((c, idx) => {
+      const fs = (byCat.get(c) || []).slice().sort((a,b) => (a.order||0)-(b.order||0));
+      const changedInCat = changedFields.filter((x) => (x.field?.category || "Advanced") === c);
+      const badge = changedInCat.length ? `Changed ${changedInCat.length}` : `${fs.length}`;
+      const defaultOpen = !!changedInCat.length || idx < 2;
+
+      return collapsibleCard({
+        id: "guided:" + c,
+        title: c,
+        subtitle: changedInCat.length ? "Contains edits" : null,
+        rightBadge: badge,
+        defaultOpen,
+        bodyNodes: fs.map(fieldRow),
+      });
     });
-    return el("div", {}, cards);
-  })();
 
-  const topBar = card("Editor", [
-    el("div", { class:"row", style:"justify-content:space-between;align-items:center;flex-wrap:wrap" }, [
-      modeSeg,
+    return el("div", { class: "guidedStack" }, sections);
+  })();;
+
+  const topBar = el("div", { class:"editTop" }, [
+    toolbar([
+      el("div", { class:"toolGroup" }, [modeSeg]),
       scopeSelector,
       applyScopeSelector,
-      el("button", { class:"btn", onclick: openReviewChanges }, `Review (${changedFields.length})`),
+      el("div", { style:"flex:1" }, ""),
+      chip(`Changed: ${changedFields.length}`, changedFields.length ? "warn" : "ok"),
+      iconTextBtn("Review", "btn", openReviewChanges),
+      iconTextBtn("Export", "btn primary", () => { state.page = "export"; persistDraft(); rerender(); }),
     ].filter(Boolean)),
-    hr(),
-    el("div", { class:"row" }, [
-      el("button", { class:"btn", onclick: async () => { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); } }, "Copy JSON"),
-      el("button", { class:"btn primary", onclick: () => downloadJson("boobly-edited.json", state.editableJson) }, "Download JSON"),
-    ]),
   ]);
 
   const body = (state.editMode === "expert")
@@ -1820,7 +1934,7 @@ function buildOptimizerOutput() {
   return blocks.filter(Boolean).join("\n\n---\n\n");
 }
 
-function optimizePage() {
+function exportPage() {
   const models = state.prompts?.prompts?.model_specific || [];
 
   const modelSel = el("select", { onchange: (e) => { state.selectedModelPromptId = e.target.value; persistDraft(); rerender(); } });
@@ -2026,18 +2140,16 @@ function settingsPage() {
    Render
 --------------------------- */
 function pageTitle() {
-  if (state.page === "home") return "Home";
-  if (state.page === "create") return "Create";
+  if (state.page === "import") return "Import";
   if (state.page === "edit") return "Edit";
-  if (state.page === "optimize") return "Optimize";
+  if (state.page === "export") return "Export";
   return "Settings";
 }
 
 function route() {
-  if (state.page === "home") return homePage();
-  if (state.page === "create") return createPage();
+  if (state.page === "import") return importPage();
   if (state.page === "edit") return editPage();
-  if (state.page === "optimize") return optimizePage();
+  if (state.page === "export") return exportPage();
   return settingsPage();
 }
 
