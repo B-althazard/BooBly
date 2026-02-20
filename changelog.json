@@ -82,7 +82,7 @@
       "date": "2026-02-20",
       "changes": [
         "Major DB expansion for higher-fidelity generation",
-        "Added: Scene Construction block (10×20), Lighting Detail block (10×20), Visual Style block (10×20)",
+        "Added: Scene Construction block (10\u00d720), Lighting Detail block (10\u00d720), Visual Style block (10\u00d720)",
         "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets",
         "Added camera physics effects table + photography terminology"
       ]
@@ -102,7 +102,7 @@
       "date": "2026-02-20",
       "changes": [
         "Critical fix: Import no longer auto-converts JSON to Master template",
-        "Convert → Master now only runs when explicitly pressed",
+        "Convert \u2192 Master now only runs when explicitly pressed",
         "Export now outputs imported/edited JSON (no forced master merge)",
         "Cache/version bump"
       ]
@@ -141,7 +141,16 @@
         "Edit: added Generic Key Editor that works with any imported JSON (keys shown as-is, categorized, searchable)",
         "Default option added per key to preserve original imported value while allowing overrides",
         "Advanced Editor added now: edit scalar/object/array values via JSON-aware textarea with validation",
-        "DB lookup optimized via in-memory index for fast path→values resolution"
+        "DB lookup optimized via in-memory index for fast path\u2192values resolution"
+      ]
+    },
+    {
+      "version": "v1_2_9",
+      "date": "2026-02-20",
+      "changes": [
+        "Version bump to v1_2_9",
+        "Fix: DB path\u2192values lookup now uses the in-memory index in selectFromDb() (optimization active)",
+        "Chore: updated app/service worker version headers and minor code cleanup"
       ]
     }
   ]

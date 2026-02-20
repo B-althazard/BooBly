@@ -1,5 +1,5 @@
-// BooBly Service Worker (v1_2_8_HOTFIX-2)
-const VERSION = 'v1_2_8_HOTFIX-2';
+// BooBly Service Worker (v1_2_9)
+const VERSION = 'v1_2_9';
 const STATIC_CACHE = `boobly-static-${VERSION}`;
 const RUNTIME_CACHE = `boobly-runtime-${VERSION}`;
 

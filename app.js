@@ -1,4 +1,4 @@
-// BooBly v1.2 — responsive glass UI, safer persistence, better JSON tools, preset images, unified outputs.
+// BooBly v1_2_9 — responsive glass UI, safer persistence, better JSON tools, preset images, unified outputs.
 
 const state = {
   db: null,
@@ -48,7 +48,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "v1_2_8_HOTFIX-2";
+const VERSION = "v1_2_9";
 
 
 /* --------------------------
@@ -1067,7 +1067,7 @@ function dbEntryForPath(path) {
 }
 
 function selectFromDb(path, value, onChange) {
-  const entry = (state.db?.entries || []).find((e) => e.path === path);
+  const entry = dbEntryForPath(path);
   const opts = entry?.values || [];
   if (!opts.length) return inputText(value, onChange);
   const s = el("select", {});
