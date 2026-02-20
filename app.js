@@ -34,15 +34,100 @@ const STORAGE = {
   presets: "boobly.presets",
   db: "boobly.db",
   prompts: "boobly.prompts",
+  changelog: "boobly.changelog",
   llmUrl: "boobly.llmUrl",
   openOnGen: "boobly.openOnGenerate",
   draft: "boobly.draft.v1",
   page: "boobly.page",
 };
 
-const VERSION = "1.2.8-patch.1";
+const VERSION = "v1_2_8_HOTFIX-1";
 
-const DEFAULT_CHANGELOG = {"app": "BooBly", "schema": 1, "entries": [{"version": "1.0.0", "date": "2026-02-19", "changes": ["Initial MVP: Home/Create/Edit/Optimize/Settings navigation", "Import JSON (paste/upload), editable JSON view, basic summary table", "Key-Value database (local), prompts library (local), import/export JSON files", "PWA + offline service worker caching"]}, {"version": "1.1.0", "date": "2026-02-19", "changes": ["UI pass: glass cards, improved spacing, consistent buttons", "JSON import UX improvements + Clear button", "Master JSON template + converter (normalize to master structure)", "Prompt blocks foundation (master_prompt/model/use-case)"]}, {"version": "1.2.0", "date": "2026-02-19", "changes": ["Responsive layout improvements (mobile-first)", "Hamburger menu toggle closes Settings", "Theme toggle UI (sun/moon concept)", "Draft persistence (reduce data loss on refresh)", "Import modal: Paste from clipboard", "Expanded JSON Data summary", "Console: fixed height + internal scroll", "JSON code: line numbers + syntax highlight", "Preset images support + gallery groundwork", "Unified output option groundwork (merge JSON + prompt blocks)", "Help guide modal added"]}, {"version": "1.2.1", "date": "2026-02-20", "changes": ["Cache-clean rebuild to address service worker serving old bundles"]}, {"version": "1.2.3", "date": "2026-02-20", "changes": ["Bundled 7 provided preset images into the build", "Generated 7 default presets referencing the bundled images", "Auto-seed presets on first load if none exist", "Service worker cache/version bump to prevent stale assets"]}, {"version": "1.2.4", "date": "2026-02-20", "changes": ["Preset names + Home captions; presets diversified (scene/outfit/hair/eyes/framing)", "Create: Import Code + Upload File inline; normalized action button sizing", "Console: max height enforced + internal scroll", "Settings: Open LLM URL toggle layout fixed", "Help modal reformatted into step list"]}, {"version": "1.2.5", "date": "2026-02-20", "changes": ["Preset name editing now updates preset list (and JSON identity in sync)", "Edit: preset selector dropdown (switch presets inside Edit)", "Edit: Environment moved to DB-backed dropdown", "DB: added environment location path and values"]}, {"version": "1.2.6", "date": "2026-02-20", "changes": ["Major DB expansion for higher-fidelity generation", "Added: Scene Construction block (10×20), Lighting Detail block (10×20), Visual Style block (10×20)", "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets", "Added camera physics effects table + photography terminology"]}, {"version": "1.2.7", "date": "2026-02-20", "changes": ["Attempted fix for segmented controls interactions (Makeup/Freckles)", "Create: Choose Preset button full-width for consistency", "Edit: ensured preset switcher present (if missing in prior builds)", "Cache/version bump"]}, {"version": "1.2.8", "date": "2026-02-20", "changes": ["Critical fix: Import no longer auto-converts JSON to Master template", "Convert → Master now only runs when explicitly pressed", "Export now outputs imported/edited JSON (no forced master merge)", "Cache/version bump"]}, {"version": "1.2.8-patch", "date": "2026-02-20", "changes": ["Changelog moved to changelog.json (single source of truth)", "Changelog modal now renders from changelog.json (maintainable)", "Export All now includes changelog; Import All restores changelog"]}]};
+
+/* --------------------------
+   IndexedDB (for large blobs like wallpaper)
+--------------------------- */
+const IDB = {
+  name: "boobly",
+  version: 1,
+  store: "kv",
+};
+
+function idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB.name, IDB.version);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB.store)) db.createObjectStore(IDB.store);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGet(key) {
+  try {
+    const db = await idbOpen();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(IDB.store, "readonly");
+      const st = tx.objectStore(IDB.store);
+      const r = st.get(key);
+      r.onsuccess = () => resolve(r.result ?? null);
+      r.onerror = () => resolve(null);
+      tx.oncomplete = () => db.close();
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function idbSet(key, value) {
+  try {
+    const db = await idbOpen();
+    return await new Promise((resolve) => {
+      const tx = db.transaction(IDB.store, "readwrite");
+      const st = tx.objectStore(IDB.store);
+      const r = (value === null || value === undefined) ? st.delete(key) : st.put(value, key);
+      r.onsuccess = () => resolve(true);
+      r.onerror = () => resolve(false);
+      tx.oncomplete = () => db.close();
+    });
+  } catch {
+    return false;
+  }
+}
+
+let _wallpaperObjectUrl = null;
+
+async function applyWallpaperBlob(blob) {
+  if (_wallpaperObjectUrl) {
+    URL.revokeObjectURL(_wallpaperObjectUrl);
+    _wallpaperObjectUrl = null;
+  }
+  const appEl = document.getElementById("app");
+  if (!appEl) return;
+
+  if (!blob) {
+    state.wallpaper = null;
+    appEl.style.backgroundImage = "none";
+    return;
+  }
+
+  _wallpaperObjectUrl = URL.createObjectURL(blob);
+  state.wallpaper = _wallpaperObjectUrl;
+  appEl.style.backgroundImage = `url(${_wallpaperObjectUrl})`;
+}
+
+async function dataUrlToBlob(dataUrl) {
+  try {
+    const resp = await fetch(dataUrl);
+    return await resp.blob();
+  } catch {
+    return null;
+  }
+}
+
+const DEFAULT_CHANGELOG = {"app": "BooBly", "schema": 1, "entries": [{"version": "1.0.0", "date": "2026-02-19", "changes": ["Initial MVP: Home/Create/Edit/Optimize/Settings navigation", "Import JSON (paste/upload), editable JSON view, basic summary table", "Key-Value database (local), prompts library (local), import/export JSON files", "PWA + offline service worker caching"]}, {"version": "1.1.0", "date": "2026-02-19", "changes": ["UI pass: glass cards, improved spacing, consistent buttons", "JSON import UX improvements + Clear button", "Master JSON template + converter (normalize to master structure)", "Prompt blocks foundation (master_prompt/model/use-case)"]}, {"version": "1.2.0", "date": "2026-02-19", "changes": ["Responsive layout improvements (mobile-first)", "Hamburger menu toggle closes Settings", "Theme toggle UI (sun/moon concept)", "Draft persistence (reduce data loss on refresh)", "Import modal: Paste from clipboard", "Expanded JSON Data summary", "Console: fixed height + internal scroll", "JSON code: line numbers + syntax highlight", "Preset images support + gallery groundwork", "Unified output option groundwork (merge JSON + prompt blocks)", "Help guide modal added"]}, {"version": "1.2.1", "date": "2026-02-20", "changes": ["Cache-clean rebuild to address service worker serving old bundles"]}, {"version": "1.2.3", "date": "2026-02-20", "changes": ["Bundled 7 provided preset images into the build", "Generated 7 default presets referencing the bundled images", "Auto-seed presets on first load if none exist", "Service worker cache/version bump to prevent stale assets"]}, {"version": "1.2.4", "date": "2026-02-20", "changes": ["Preset names + Home captions; presets diversified (scene/outfit/hair/eyes/framing)", "Create: Import Code + Upload File inline; normalized action button sizing", "Console: max height enforced + internal scroll", "Settings: Open LLM URL toggle layout fixed", "Help modal reformatted into step list"]}, {"version": "1.2.5", "date": "2026-02-20", "changes": ["Preset name editing now updates preset list (and JSON identity in sync)", "Edit: preset selector dropdown (switch presets inside Edit)", "Edit: Environment moved to DB-backed dropdown", "DB: added environment location path and values"]}, {"version": "1.2.6", "date": "2026-02-20", "changes": ["Major DB expansion for higher-fidelity generation", "Added: Scene Construction block (10\u00d720), Lighting Detail block (10\u00d720), Visual Style block (10\u00d720)", "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets", "Added camera physics effects table + photography terminology"]}, {"version": "1.2.7", "date": "2026-02-20", "changes": ["Attempted fix for segmented controls interactions (Makeup/Freckles)", "Create: Choose Preset button full-width for consistency", "Edit: ensured preset switcher present (if missing in prior builds)", "Cache/version bump"]}, {"version": "1.2.8", "date": "2026-02-20", "changes": ["Critical fix: Import no longer auto-converts JSON to Master template", "Convert \u2192 Master now only runs when explicitly pressed", "Export now outputs imported/edited JSON (no forced master merge)", "Cache/version bump"]}, {"version": "1.2.8-patch", "date": "2026-02-20", "changes": ["Changelog moved to changelog.json (single source of truth)", "Changelog modal now renders from changelog.json (maintainable)", "Export All now includes changelog; Import All restores changelog"]}, {"version": "v1_2_8_HOTFIX-1", "date": "2026-02-20", "changes": ["Service worker rewritten: safe same-origin GET caching, app-shell offline fallback, runtime cache cap, skipWaiting/clients.claim", "PWA manifest start_url set to ./ to ensure offline launch consistency; scope set to ./", "Preset thumbnails added to precache for first-run offline availability", "localStorage writes hardened with quota/blocked handling and user toast on failure", "Wallpaper storage migrated from localStorage DataURL to IndexedDB Blob with legacy migration", "Draft persistence debounced to reduce storage churn", "Import validation added for Database/Prompts/Presets/Changelog; Import All validates each section", "JSON syntax highlighting fixed by escaping quotes consistently", "Modal accessibility improved: Escape-to-close, focus trapping, and focus restore; close buttons use unified close", "Keyboard focus styles added via :focus-visible", "Basic Content-Security-Policy meta added to index.html for safer defaults", "Render error boundary added with reset option for recovery"]}]};
 
 
 const toast = (m) => {
@@ -61,17 +146,38 @@ const loadLS = (k, fallback = null) => {
     return fallback;
   }
 };
-const saveLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const saveLS = (k, v) => {
+  try {
+    localStorage.setItem(k, JSON.stringify(v));
+    return true;
+  } catch (e) {
+    console.warn("localStorage write failed:", k, e);
+    toast("Storage is full or blocked. Some settings may not save.");
+    return false;
+  }
+};
 
-function persistDraft() {
+let _persistTimer = null;
+function persistDraftNow() {
   const payload = {
     rawJsonText: state.rawJsonText,
     editableJson: state.editableJson,
     page: state.page,
-    ts: Date.now(),
+    selectedModelPromptId: state.selectedModelPromptId,
+    optimizeTab: state.optimizeTab,
+    addMasterPrompt: state.addMasterPrompt,
+    addModelPrompt: state.addModelPrompt,
+    addUseCasePrompt: state.addUseCasePrompt,
+    addJsonOutput: state.addJsonOutput,
+    currentPresetId: state.currentPresetId,
+    createJsonExpanded: state.createJsonExpanded,
   };
   saveLS(STORAGE.draft, payload);
   saveLS(STORAGE.page, state.page);
+}
+function persistDraft() {
+  clearTimeout(_persistTimer);
+  _persistTimer = setTimeout(persistDraftNow, 300);
 }
 
 const setTheme = (th) => {
@@ -80,11 +186,10 @@ const setTheme = (th) => {
   saveLS(STORAGE.theme, th);
 };
 
-const setWallpaper = (dataUrl) => {
-  state.wallpaper = dataUrl;
-  const app = document.getElementById("app");
-  app.style.backgroundImage = dataUrl ? `url(${dataUrl})` : "none";
-  saveLS(STORAGE.wallpaper, dataUrl);
+const setWallpaper = async (blobOrNull) => {
+  // blobOrNull: Blob/File or null
+  await idbSet(STORAGE.wallpaper, blobOrNull);
+  await applyWallpaperBlob(blobOrNull);
 };
 
 
@@ -107,6 +212,57 @@ async function fetchJson(path) {
   const r = await fetch(path);
   if (!r.ok) throw new Error("Failed to load " + path);
   return await r.json();
+}
+
+/* --------------------------
+   Import validation (lightweight schema checks)
+--------------------------- */
+function isPlainObject(x) {
+  return !!x && typeof x === "object" && !Array.isArray(x);
+}
+
+function validateDatabase(obj) {
+  if (!isPlainObject(obj)) return { ok:false, error:"Database must be an object." };
+  if (!Array.isArray(obj.entries)) return { ok:false, error:"Database.entries must be an array." };
+  const bad = obj.entries.find(e =>
+    !isPlainObject(e) ||
+    typeof e.category !== "string" ||
+    typeof e.path !== "string" ||
+    typeof e.description !== "string" ||
+    !Array.isArray(e.values)
+  );
+  if (bad) return { ok:false, error:"Database.entries contains invalid items." };
+  return { ok:true };
+}
+
+function validatePrompts(obj) {
+  if (!isPlainObject(obj)) return { ok:false, error:"Prompts must be an object." };
+  if (!isPlainObject(obj.prompts)) return { ok:false, error:"Prompts.prompts must be an object." };
+  if (typeof obj.prompts.master_prompt !== "string") return { ok:false, error:"Prompts.prompts.master_prompt must be a string." };
+  if (!Array.isArray(obj.prompts.model_specific)) return { ok:false, error:"Prompts.prompts.model_specific must be an array." };
+  if (!Array.isArray(obj.prompts.use_cases)) return { ok:false, error:"Prompts.prompts.use_cases must be an array." };
+
+  const msBad = obj.prompts.model_specific.find(p => !isPlainObject(p) || typeof p.id!=="string" || typeof p.title!=="string" || typeof p.prompt!=="string");
+  if (msBad) return { ok:false, error:"Prompts.prompts.model_specific contains invalid items." };
+
+  const ucBad = obj.prompts.use_cases.find(p => !isPlainObject(p) || typeof p.id!=="string" || typeof p.title!=="string" || typeof p.prompt!=="string");
+  if (ucBad) return { ok:false, error:"Prompts.prompts.use_cases contains invalid items." };
+
+  return { ok:true };
+}
+
+function validatePresets(obj) {
+  if (!Array.isArray(obj)) return { ok:false, error:"Presets must be an array." };
+  const bad = obj.find(p => !isPlainObject(p) || typeof p.id!=="string" || typeof p.title!=="string" || typeof p.image!=="string");
+  if (bad) return { ok:false, error:"Presets array contains invalid items." };
+  return { ok:true };
+}
+
+function validateChangelog(obj) {
+  if (!isPlainObject(obj) || !Array.isArray(obj.entries)) return { ok:false, error:"Changelog must have entries array." };
+  const bad = obj.entries.find(e => !isPlainObject(e) || typeof e.version!=="string" || typeof e.date!=="string" || !Array.isArray(e.changes));
+  if (bad) return { ok:false, error:"Changelog.entries contains invalid items." };
+  return { ok:true };
 }
 
 /* --------------------------
@@ -340,7 +496,9 @@ function escapeHtml(s) {
   return (s || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 /* JSON syntax highlight with line numbers (lightweight) */
@@ -459,14 +617,73 @@ function hr() { return el("div", { class: "hr" }); }
    Modals
 --------------------------- */
 function openModal(contentNode) {
+  const previouslyFocused = document.activeElement;
+
+  const close = () => {
+    back.remove();
+    document.removeEventListener("keydown", onKey);
+    if (previouslyFocused && typeof previouslyFocused.focus === "function") {
+      previouslyFocused.focus();
+    }
+  };
+
   const back = el("div", {
     class: "modalBack",
     onclick: (e) => {
-      if (e.target === back) back.remove();
+      if (e.target === back) close();
     },
-  }, [el("div", { class: "modal" }, [contentNode])]);
+  }, [
+    el("div", { class: "modal", role: "dialog", "aria-modal": "true", tabindex: "-1" }, [contentNode]),
+  ]);
+
+  const onKey = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+      return;
+    }
+    if (e.key !== "Tab") return;
+
+    const modal = back.querySelector(".modal");
+    const focusables = [...modal.querySelectorAll(
+      `a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])`
+    )].filter(el => el.offsetParent !== null);
+
+    if (!focusables.length) {
+      modal.focus();
+      e.preventDefault();
+      return;
+    }
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      last.focus();
+      e.preventDefault();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      first.focus();
+      e.preventDefault();
+    }
+  };
+
   document.body.appendChild(back);
+  document.addEventListener("keydown", onKey);
+
+  // initial focus
+  setTimeout(() => {
+    const modal = back.querySelector(".modal");
+    const first = modal.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])");
+    (first || modal).focus();
+  }, 0);
+
   return back;
+}
+
+function closeTopModal() {
+  const back = document.querySelector(".modalBack");
+  if (!back) return;
+  if (typeof back._close === "function") back._close();
+  else back.remove();
 }
 
 function openHelpModal() {
@@ -483,7 +700,7 @@ function openHelpModal() {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Help — How to use BooBly"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     hr(),
     ol,
@@ -501,7 +718,7 @@ function openChangelogModal() {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Changelog"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     hr(),
     el("div", { class: "small" }, list.length ? list : [el("div", { class:"small" }, "No changelog data.")]),
@@ -523,7 +740,7 @@ function openPresetPicker() {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Select Preset"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     grid,
   ]));
@@ -567,7 +784,7 @@ function openPresetImagePicker(presetId) {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Set Preset Image"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     hr(),
     input,
@@ -614,7 +831,7 @@ function openImportModal() {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Import JSON"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     hr(),
     ta,
@@ -1017,7 +1234,7 @@ function openPresetsManager() {
   openModal(el("div", {}, [
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Presets (long-press image)"),
-      el("button", { class: "btn", onclick: () => document.querySelector(".modalBack")?.remove() }, "Close"),
+      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
     ]),
     hr(),
     el("div", { class: "small" }, "Long-press a preset tile to set its image."),
@@ -1033,17 +1250,12 @@ function settingsPage() {
     onchange: async (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
-      const dataUrl = await new Promise((res) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.readAsDataURL(f);
-      });
-      setWallpaper(dataUrl);
+      await setWallpaper(f);
       toast("Wallpaper set");
       rerender();
     },
   });
-  const clearWp = el("button", { class: "btn", onclick: () => { setWallpaper(null); toast("Wallpaper cleared"); rerender(); } }, "Clear Wallpaper");
+  const clearWp = el("button", { class: "btn", onclick: async () => { await setWallpaper(null); toast("Wallpaper cleared"); rerender(); } }, "Clear Wallpaper");
 
   const exportDb = el("button", { class: "btn primary", onclick: () => downloadJson("boobly-database.json", state.db) }, "Export Database");
   const exportPrompts = el("button", { class: "btn", onclick: () => downloadJson("boobly-prompts.json", state.prompts) }, "Export Prompts");
@@ -1056,25 +1268,62 @@ function settingsPage() {
   }, "Export All");
 
   const importDb = fileImportButton("Import Database", async (txt) => {
-    try { const j = JSON.parse(txt); state.db = j; saveLS(STORAGE.db, j); toast("Imported DB"); rerender(); }
-    catch { toast("DB import failed"); }
+    try {
+      const j = JSON.parse(txt);
+      const v = validateDatabase(j);
+      if (!v.ok) throw new Error(v.error);
+      state.db = j;
+      saveLS(STORAGE.db, j);
+      toast("Imported DB");
+      rerender();
+    } catch (e) {
+      toast("DB import failed: " + (e?.message || ""));
+    }
   });
 
   const importPrompts = fileImportButton("Import Prompts", async (txt) => {
-    try { const j = JSON.parse(txt); state.prompts = j; saveLS(STORAGE.prompts, j); toast("Imported Prompts"); rerender(); }
-    catch { toast("Prompts import failed"); }
+    try {
+      const j = JSON.parse(txt);
+      const v = validatePrompts(j);
+      if (!v.ok) throw new Error(v.error);
+      state.prompts = j;
+      saveLS(STORAGE.prompts, j);
+      toast("Imported Prompts");
+      rerender();
+    } catch (e) {
+      toast("Prompts import failed: " + (e?.message || ""));
+    }
   });
-
   const importAll = fileImportButton("Import All", async (txt) => {
     try {
       const j = JSON.parse(txt);
-      if (j.database) { state.db = j.database; saveLS(STORAGE.db, j.database); }
-      if (j.prompts) { state.prompts = j.prompts; saveLS(STORAGE.prompts, j.prompts); }
-      if (j.presets) saveLS(STORAGE.presets, j.presets);
+      if (j.database) {
+        const vd = validateDatabase(j.database);
+        if (!vd.ok) throw new Error("DB: " + vd.error);
+        state.db = j.database;
+        saveLS(STORAGE.db, j.database);
+      }
+      if (j.prompts) {
+        const vp = validatePrompts(j.prompts);
+        if (!vp.ok) throw new Error("Prompts: " + vp.error);
+        state.prompts = j.prompts;
+        saveLS(STORAGE.prompts, j.prompts);
+      }
+      if (j.presets) {
+        const vps = validatePresets(j.presets);
+        if (!vps.ok) throw new Error("Presets: " + vps.error);
+        saveLS(STORAGE.presets, j.presets);
+      }
+      if (j.changelog) {
+        const vc = validateChangelog(j.changelog);
+        if (!vc.ok) throw new Error("Changelog: " + vc.error);
+        state.changelog = j.changelog;
+        saveLS(STORAGE.changelog, j.changelog);
+      }
       toast("Imported ALL");
       rerender();
-    } catch {
-      toast("Import ALL failed");
+    } catch (e) {
+      toast("Import ALL failed: " + (e?.message || ""));
     }
   });
 
@@ -1133,19 +1382,44 @@ function rerender() {
   root.innerHTML = "";
   const overlay = el("div", { class: "wallpaperOverlay" }, []);
   overlay.appendChild(header(pageTitle()));
-  overlay.appendChild(route());
+  let pageNode;
+  try {
+    pageNode = route();
+  } catch (e) {
+    console.error(e);
+    pageNode = card("Something went wrong", [
+      el("div", { class: "small" }, String(e && (e.stack || e.message || e))),
+      hr(),
+      el("button", { class: "btn", onclick: () => { try { localStorage.clear(); } catch {} location.reload(); } }, "Reset app state"),
+    ]);
+  }
+  overlay.appendChild(pageNode);
   overlay.appendChild(tabs());
   root.appendChild(overlay);
 }
 
 async function init() {
   setTheme(loadLS(STORAGE.theme, "light") || "light");
-  setWallpaper(loadLS(STORAGE.wallpaper, null));
+  /* Wallpaper: migrate legacy localStorage DataURL (if any) to IndexedDB */
+  const legacyWp = loadLS(STORAGE.wallpaper, null);
+  if (typeof legacyWp === "string" && legacyWp.startsWith("data:")) {
+    const b = await dataUrlToBlob(legacyWp);
+    if (b) {
+      await idbSet(STORAGE.wallpaper, b);
+      try { localStorage.removeItem(STORAGE.wallpaper); } catch {}
+    }
+  }
+  const wpBlob = await idbGet(STORAGE.wallpaper);
+  await applyWallpaperBlob(wpBlob);
+
 
   const dbLS = loadLS(STORAGE.db, null);
   const prLS = loadLS(STORAGE.prompts, null);
   state.db = dbLS || (await fetchJson("database.json"));
   state.prompts = prLS || (await fetchJson("prompts.json"));
+
+  const clLS = loadLS(STORAGE.changelog, null);
+  state.changelog = clLS || (await fetchJson("changelog.json").catch(() => DEFAULT_CHANGELOG));
 
   // restore draft (prevents refresh data loss)
   const draft = loadLS(STORAGE.draft, null);

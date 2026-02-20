@@ -383,3 +383,13 @@ textarea{min-height:160px; font-family:var(--mono); font-size:12px; line-height:
 .btn.full{width:100%;}
 
 .btn{min-height:44px;}
+
+
+/* Accessibility: keyboard focus */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.modal:focus-visible { outline-offset: 6px; }

@@ -115,6 +115,24 @@
         "Changelog modal now renders from changelog.json (maintainable)",
         "Export All now includes changelog; Import All restores changelog"
       ]
+    },
+    {
+      "version": "v1_2_8_HOTFIX-1",
+      "date": "2026-02-20",
+      "changes": [
+        "Service worker rewritten: safe same-origin GET caching, app-shell offline fallback, runtime cache cap, skipWaiting/clients.claim",
+        "PWA manifest start_url set to ./ to ensure offline launch consistency; scope set to ./",
+        "Preset thumbnails added to precache for first-run offline availability",
+        "localStorage writes hardened with quota/blocked handling and user toast on failure",
+        "Wallpaper storage migrated from localStorage DataURL to IndexedDB Blob with legacy migration",
+        "Draft persistence debounced to reduce storage churn",
+        "Import validation added for Database/Prompts/Presets/Changelog; Import All validates each section",
+        "JSON syntax highlighting fixed by escaping quotes consistently",
+        "Modal accessibility improved: Escape-to-close, focus trapping, and focus restore; close buttons use unified close",
+        "Keyboard focus styles added via :focus-visible",
+        "Basic Content-Security-Policy meta added to index.html for safer defaults",
+        "Render error boundary added with reset option for recovery"
+      ]
     }
   ]
 }
