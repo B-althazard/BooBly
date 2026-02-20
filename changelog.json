@@ -3,6 +3,20 @@
   "schema": 1,
   "entries": [
     {
+      "version": "1.4.0_Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "SiliconTitsUI 2.0 foundation: unified spacing tokens, consistent button/input sizing, and restored styling for missing UI classes (JSON table + code viewer + toggles).",
+        "Import: preset picker is now responsive; tiles are constrained with proper object-fit and mobile breakpoints.",
+        "Import: JSON Data Expand/Collapse now works (restored kv table styling + collapsed gradient fade).",
+        "Edit (Guided): all category cards start collapsed by default; categories auto-open only when containing edits.",
+        "Export: restored toggle styling and added Copy JSON + Download JSON.",
+        "Export: added Prefix/Suffix wrapper fields for model-specific pre/post formatting.",
+        "Settings: wallpaper picker now uses a styled button (file input hidden) for consistent padding and layout.",
+        "Console: capped height with internal scroll; syntax-highlighted JSON code card restored."
+      ]
+    },
+    {
       "version": "1.0.0",
       "date": "2026-02-19",
       "changes": [

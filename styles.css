@@ -38,6 +38,40 @@ body{
   color: var(--text);
 }
 
+/* SiliconTitsUI 2.0 — layout foundation */
+.wallpaperOverlay{
+  min-height:100vh;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(255,87,198,.18), transparent 55%),
+    radial-gradient(900px 520px at 90% 10%, rgba(59,130,246,.14), transparent 55%),
+    radial-gradient(900px 520px at 50% 110%, rgba(16,185,129,.10), transparent 60%),
+    var(--bg);
+}
+
+.stackCol{display:flex; flex-direction:column; gap: var(--s4)}
+.btnRowTop{display:flex; gap: var(--s2); flex-wrap:wrap; align-items:center}
+.settingsRow{display:flex; align-items:center; justify-content:space-between; gap: var(--s3)}
+
+/* File input — force consistent styling */
+.fileRow{display:flex; gap: var(--s2); align-items:center; flex-wrap:wrap}
+.fileName{font-size:12px; color: var(--muted); font-weight:800; max-width: 100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* Key/Value table (Import summary) */
+.kvWrap{position:relative}
+.kvHost{border-radius: var(--r3); overflow:hidden}
+.kvTable{width:100%; border-collapse:collapse}
+.kvTable td{padding: 10px 12px; border-top: 1px solid var(--border); font-size: 13px}
+.kvTable tr:first-child td{border-top:0}
+.kvK,.kvKey{font-weight:900; width: 42%; color: var(--muted)}
+.kvV,.kvVal{font-weight:900}
+.kvCollapsed{max-height: 260px; overflow:hidden}
+.kvFade{
+  position:absolute; left:0; right:0; bottom:0;
+  height: 70px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0), var(--panel));
+  pointer-events:none;
+}
+
 a{color:inherit}
 button, input, select, textarea{font:inherit}
 input, select, textarea{
@@ -186,6 +220,36 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,87,198,.65); bo
 .chip.ok{border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12)}
 .chip.warn{border-color: rgba(245,158,11,.40); background: rgba(245,158,11,.14)}
 .chip.neutral{opacity:.95}
+
+/* Switch pill */
+.switch{
+  display:inline-flex;
+  width: 54px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  position:relative;
+  cursor:pointer;
+  box-shadow: var(--shadow2);
+}
+.switch::after{
+  content:"";
+  position:absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  transition: transform .18s ease;
+}
+.switch.on{
+  background: rgba(255,87,198,.22);
+  border-color: rgba(255,87,198,.45);
+}
+.switch.on::after{transform: translateX(22px)}
 
 /* Toolbar (Edit sticky) */
 .editTop{
@@ -368,6 +432,39 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,87,198,.65); bo
   box-shadow: var(--shadow);
   padding: var(--s4);
 }
+
+/* Preset picker */
+.presetGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s3);
+  margin-top: var(--s3);
+}
+.presetTile{
+  border: 1px solid var(--border);
+  border-radius: var(--r3);
+  background: var(--panel2);
+  overflow:hidden;
+  cursor:pointer;
+  box-shadow: var(--shadow2);
+}
+.presetTile img{
+  width:100%;
+  height: 140px;
+  object-fit: cover;
+  display:block;
+}
+.presetTile .pbody{padding: var(--s3)}
+.presetTile .pname{font-weight:900}
+
+@media (max-width: 900px){
+  .presetGrid{grid-template-columns: repeat(2, minmax(0, 1fr))}
+  .presetTile img{height: 160px}
+}
+@media (max-width: 520px){
+  .presetGrid{grid-template-columns: 1fr}
+  .presetTile img{height: min(48vh, 360px)}
+}
 .modalHeader{display:flex;align-items:center;justify-content:space-between;gap:var(--s3)}
 .modalTitle{font-weight:900;font-size:18px}
 
@@ -380,3 +477,35 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,87,198,.65); bo
 
 /* Back-compat */
 .consoleBox{max-height:220px;overflow:auto;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--panel2);font-family:var(--mono);font-size:12px;line-height:1.45}
+
+/* JSON code card (line numbers + highlight) */
+.codeCard{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius: var(--r3);
+  background: var(--panel2);
+  overflow:hidden;
+}
+.codeCopy{
+  position:absolute;
+  top: 10px;
+  right: 10px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  border:1px solid var(--border);
+  background: var(--panel);
+  cursor:pointer;
+  font-weight:900;
+}
+.codeHtml{font-family: var(--mono); font-size:12px; line-height:1.5; padding: 12px 12px 12px 0; overflow:auto; max-height: 420px}
+.codeLine{display:flex; gap: 10px; padding: 0 12px}
+.codeLine:hover{background: rgba(255,255,255,.08)}
+.ln{display:inline-block; width: 28px; text-align:right; color: var(--muted); user-select:none}
+.codeText{min-width:0; white-space:pre; overflow-wrap:normal}
+
+.tok-key{color: rgba(255,87,198,.95); font-weight:900}
+.tok-str{color: rgba(59,130,246,.95)}
+.tok-num{color: rgba(16,185,129,.95)}
+.tok-bool{color: rgba(245,158,11,.95); font-weight:900}
+.tok-null{color: rgba(148,163,184,.95); font-weight:900}

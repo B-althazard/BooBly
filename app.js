@@ -40,6 +40,10 @@ const state = {
   optimizeTab: "portrait", // portrait | fashion | fitness
   createJsonExpanded: false,
   currentPresetId: null,
+
+  // Export customization (model wrappers)
+  exportPrefix: "",
+  exportSuffix: "",
 };
 
 const STORAGE = {
@@ -1878,7 +1882,9 @@ function editPage() {
       const fs = (byCat.get(c) || []).slice().sort((a,b) => (a.order||0)-(b.order||0));
       const changedInCat = changedFields.filter((x) => (x.field?.category || "Advanced") === c);
       const badge = changedInCat.length ? `Changed ${changedInCat.length}` : `${fs.length}`;
-      const defaultOpen = !!changedInCat.length || idx < 2;
+      // SiliconTitsUI 2.0: start collapsed to avoid overwhelming users.
+      // Auto-open only when the category contains edits.
+      const defaultOpen = !!changedInCat.length;
 
       return collapsibleCard({
         id: "guided:" + c,
@@ -1948,6 +1954,9 @@ function exportPage() {
   ]);
 
   const output = buildOptimizerOutput();
+  const wrappedOutput = `${state.exportPrefix || ""}${output}${state.exportSuffix || ""}`;
+
+  const jsonOut = state.editableJson ? JSON.stringify(state.editableJson, null, 2) : "{\n}\n";
 
   const toggles = el("div", { class: "row" }, [
     el("div", {}, [el("div", { class: "small" }, "Master"), switchPill(state.addMasterPrompt, () => { state.addMasterPrompt = !state.addMasterPrompt; persistDraft(); rerender(); })]),
@@ -1956,7 +1965,25 @@ function exportPage() {
     el("div", {}, [el("div", { class: "small" }, "JSON"), switchPill(state.addJsonOutput, () => { state.addJsonOutput = !state.addJsonOutput; persistDraft(); rerender(); })]),
   ]);
 
-  const copyBtn = el("button", { class: "btn primary", onclick: async () => { await copyToClipboard(output); toast("Copied output"); } }, "Copy Output");
+  const copyBtn = el("button", { class: "btn primary", onclick: async () => {
+    try { await copyToClipboard(wrappedOutput); toast("Copied output"); }
+    catch { toast("Copy blocked"); }
+  } }, "Copy Output");
+
+  const copyJsonBtn = el("button", { class: "btn", onclick: async () => {
+    try { await copyToClipboard(jsonOut); toast("Copied JSON"); }
+    catch { toast("Copy blocked"); }
+  } }, "Copy JSON");
+
+  const dlJsonBtn = el("button", { class: "btn", onclick: () => {
+    if (!state.editableJson) { toast("Nothing to export"); return; }
+    downloadJson("boobly-export.json", state.editableJson);
+  } }, "Download JSON");
+
+  const prefix = el("textarea", { rows: 2, placeholder: "Prefix (optional) — text inserted before output" }, state.exportPrefix || "");
+  prefix.addEventListener("input", (e) => { state.exportPrefix = e.target.value; persistDraft(); rerender(); });
+  const suffix = el("textarea", { rows: 2, placeholder: "Suffix (optional) — text inserted after output" }, state.exportSuffix || "");
+  suffix.addEventListener("input", (e) => { state.exportSuffix = e.target.value; persistDraft(); rerender(); });
 
   return el("div", { class: "screen" }, [
     card("Model Optimizer", [
@@ -1968,9 +1995,13 @@ function exportPage() {
       el("div", { class: "small", style: "font-weight:900" }, "Merge Options"),
       toggles,
       hr(),
-      copyBtn,
+      el("div", { class: "btnRowTop" }, [copyBtn, copyJsonBtn, dlJsonBtn]),
       hr(),
-      el("textarea", { readonly: true }, output),
+      el("div", { class: "small", style: "font-weight:900" }, "Model Wrappers"),
+      el("div", { class: "small" }, "Use these when a model requires a prefix/suffix wrapper around the compiled output."),
+      el("div", { class: "stack" }, [prefix, suffix]),
+      hr(),
+      el("textarea", { readonly: true }, wrappedOutput),
     ]),
     card("Prompt Optimization", [
       seg,
@@ -2023,6 +2054,7 @@ function settingsPage() {
   const wpInput = el("input", {
     type: "file",
     accept: "image/*",
+    style: "display:none",
     onchange: async (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
@@ -2031,6 +2063,7 @@ function settingsPage() {
       rerender();
     },
   });
+  const wpBtn = el("button", { class: "btn", onclick: () => wpInput.click() }, "Choose Wallpaper");
   const clearWp = el("button", { class: "btn", onclick: async () => { await setWallpaper(null); toast("Wallpaper cleared"); rerender(); } }, "Clear Wallpaper");
 
   const exportDb = el("button", { class: "btn primary", onclick: () => downloadJson("boobly-database.json", state.db) }, "Export Database");
@@ -2124,7 +2157,7 @@ function settingsPage() {
       el("div", { class: "row" }, [importPrompts, exportPrompts]),
       el("div", { class: "row" }, [importAll, exportAll]),
       hr(),
-      el("div", { class: "row" }, [wpInput, clearWp]),
+      el("div", { class: "fileRow" }, [wpBtn, clearWp, wpInput]),
       hr(),
       el("div", { class: "small", style: "font-weight:900" }, "LLM Integration"),
       llmUrl,
