@@ -40,7 +40,7 @@ const STORAGE = {
   page: "boobly.page",
 };
 
-const VERSION = "1.2.7";
+const VERSION = "1.2.8";
 
 const toast = (m) => {
   const t = document.createElement("div");
@@ -618,10 +618,10 @@ function openImportModal() {
         return;
       }
       state.parsedJson = parsed;
-      state.editableJson = convertToMaster(parsed);
-      state.rawJsonText = JSON.stringify(state.editableJson, null, 2);
+      state.editableJson = parsed;
+      state.rawJsonText = JSON.stringify(parsed, null, 2);
       persistDraft();
-      toast("Imported + converted");
+      toast("Imported");
       document.querySelector(".modalBack")?.remove();
       rerender();
     },
@@ -738,10 +738,10 @@ function createPage() {
         return;
       }
       state.parsedJson = parsed;
-      state.editableJson = convertToMaster(parsed);
-      state.rawJsonText = JSON.stringify(state.editableJson, null, 2);
+      state.editableJson = parsed;
+      state.rawJsonText = JSON.stringify(parsed, null, 2);
       persistDraft();
-      toast("Imported + converted");
+      toast("Imported");
       rerender();
     },
   });
