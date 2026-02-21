@@ -1,0 +1,1696 @@
+{
+  "meta": {
+    "master_version": "v1_4_5_Alpha",
+    "canonical_version": "1.3.0",
+    "generated_at": "2026-02-20",
+    "app_min_version": "1.4.0-alpha",
+    "notes": [
+      "Option A: schema + UI metadata. Examples are not embedded.",
+      "Runtime UI rendering decisions are driven from `fields`, `categories`, `ui`, `vocab`, `presets`.",
+      "Adapters accept legacy formats and convert into canonical 1.3.0."
+    ],
+    "previous_master_versions": [
+      "1.3.1",
+      "v1_4_2_Alpha"
+    ],
+    "master_semver": "1.4.5-alpha",
+    "updated_at": "2026-02-21"
+  },
+  "ui": {
+    "modes": [
+      "guided",
+      "expert"
+    ],
+    "layout_rules": {
+      "mobile": {
+        "guided_default": true,
+        "expert_hidden_by_default": true,
+        "expert_warning_once": true,
+        "primary_actions": [
+          "review_changes",
+          "export"
+        ]
+      },
+      "desktop": {
+        "guided_default": true,
+        "expert_split_view": true,
+        "left_panel": [
+          "scope_selector",
+          "search",
+          "filters",
+          "categories"
+        ],
+        "right_panel": [
+          "inspector",
+          "details",
+          "reset_undo"
+        ]
+      }
+    },
+    "global_controls": {
+      "change_tracking": true,
+      "review_changes_screen": true,
+      "filters": [
+        "all",
+        "changed",
+        "recommended",
+        "db_supported",
+        "freeform",
+        "objects_arrays"
+      ],
+      "export_formats": [
+        "raw_json",
+        "json_file"
+      ],
+      "undo": {
+        "per_field": true,
+        "per_category": true,
+        "global": true
+      }
+    },
+    "field_state_ui": {
+      "show_default_chip": true,
+      "default_chip_format": "Default (keep: {{imported}})",
+      "override_chip_format": "Overridden ({{current}})",
+      "show_original_on_demand": true
+    },
+    "guided_policy": {
+      "allow_freeform": false,
+      "guided_allowed_controls": [
+        "select",
+        "segmented",
+        "slider",
+        "stepper",
+        "readonly"
+      ]
+    }
+  },
+  "canonical_model": {
+    "root": {
+      "schema_version": "1.3.0",
+      "scene": {},
+      "characters": [],
+      "style": {},
+      "technical": {},
+      "notes": {
+        "unmapped": {},
+        "source_text": "",
+        "adapter_log": []
+      }
+    },
+    "character_identity": {
+      "id": "backend_stable_id",
+      "name": "frontend_display_name"
+    }
+  },
+  "categories": [
+    {
+      "id": "Scene",
+      "order": 10,
+      "icon": "scene"
+    },
+    {
+      "id": "Camera",
+      "order": 20,
+      "icon": "camera"
+    },
+    {
+      "id": "Lighting",
+      "order": 30,
+      "icon": "lighting"
+    },
+    {
+      "id": "Composition",
+      "order": 40,
+      "icon": "composition"
+    },
+    {
+      "id": "Effects",
+      "order": 50,
+      "icon": "effects"
+    },
+    {
+      "id": "Face",
+      "order": 60,
+      "icon": "face"
+    },
+    {
+      "id": "Hair",
+      "order": 70,
+      "icon": "hair"
+    },
+    {
+      "id": "Body",
+      "order": 80,
+      "icon": "body"
+    },
+    {
+      "id": "Outfit",
+      "order": 90,
+      "icon": "outfit"
+    },
+    {
+      "id": "Accessories",
+      "order": 100,
+      "icon": "accessories"
+    },
+    {
+      "id": "Pose & Action",
+      "order": 110,
+      "icon": "pose"
+    },
+    {
+      "id": "Style",
+      "order": 120,
+      "icon": "style"
+    },
+    {
+      "id": "Technical",
+      "order": 130,
+      "icon": "technical"
+    },
+    {
+      "id": "Advanced",
+      "order": 140,
+      "icon": "advanced"
+    }
+  ],
+  "vocab": {
+    "yes_no": [
+      "No",
+      "Yes"
+    ],
+    "gender": [
+      "Female",
+      "Male",
+      "Non-binary",
+      "Unspecified"
+    ],
+    "eye_colors": [
+      "Brown",
+      "Blue",
+      "Green",
+      "Hazel",
+      "Gray",
+      "Amber",
+      "Violet",
+      "Black"
+    ],
+    "hair_colors": [
+      "Black",
+      "Brown",
+      "Blonde",
+      "Red",
+      "Gray",
+      "White",
+      "Auburn",
+      "Pink",
+      "Blue",
+      "Green",
+      "Purple"
+    ],
+    "hair_lengths": [
+      "Bald",
+      "Buzz",
+      "Short",
+      "Medium",
+      "Long",
+      "Very long"
+    ],
+    "makeup_styles": [
+      "None",
+      "Natural",
+      "Glam",
+      "Gothic",
+      "Smoky",
+      "K-beauty",
+      "Retro"
+    ],
+    "lighting_styles": [
+      "Natural daylight",
+      "Soft studio",
+      "Cinematic rim light",
+      "Neon",
+      "Golden hour",
+      "Overcast",
+      "Harsh direct"
+    ],
+    "camera_shots": [
+      "Wide",
+      "Medium",
+      "Close-up",
+      "Extreme close-up",
+      "Full body",
+      "Portrait"
+    ],
+    "focal_lengths": [
+      "18mm",
+      "24mm",
+      "35mm",
+      "50mm",
+      "85mm",
+      "105mm"
+    ],
+    "render_styles": [
+      "Photoreal",
+      "Stylized",
+      "Anime",
+      "Illustration",
+      "3D render"
+    ],
+    "quality": [
+      "Draft",
+      "Standard",
+      "High",
+      "Ultra"
+    ],
+    "scene_locations": [
+      "Studio",
+      "Street",
+      "Bedroom",
+      "Forest",
+      "Beach",
+      "Office",
+      "Cafe",
+      "Rooftop",
+      "Warehouse"
+    ],
+    "time_of_day": [
+      "Dawn",
+      "Morning",
+      "Midday",
+      "Afternoon",
+      "Golden hour",
+      "Dusk",
+      "Night"
+    ],
+    "environments": [
+      "tropical beach shoreline",
+      "city street",
+      "studio backdrop",
+      "forest",
+      "mountain lake",
+      "bedroom",
+      "rooftop",
+      "cafe interior",
+      "desert",
+      "snowy landscape"
+    ],
+    "composition_styles": [
+      "centered portrait",
+      "rule of thirds",
+      "symmetrical",
+      "leading lines",
+      "shallow depth of field",
+      "wide establishing shot",
+      "close-up detail"
+    ],
+    "effects_styles": [
+      "none",
+      "subtle film grain",
+      "bokeh",
+      "soft bloom",
+      "lens flare",
+      "chromatic aberration (subtle)",
+      "vignette (subtle)"
+    ],
+    "moods": [
+      "neutral",
+      "dreamy",
+      "dramatic",
+      "romantic",
+      "mysterious",
+      "playful",
+      "tense",
+      "serene"
+    ],
+    "poses": [
+      "standing",
+      "seated",
+      "walking",
+      "leaning",
+      "kneeling",
+      "lying down",
+      "arms crossed",
+      "hands on hips",
+      "looking over shoulder"
+    ],
+    "actions": [
+      "none",
+      "smiling",
+      "laughing",
+      "waving",
+      "reading",
+      "drinking coffee",
+      "running fingers through hair",
+      "looking at camera",
+      "looking away"
+    ],
+    "hair_styles": [
+      "straight",
+      "wavy",
+      "curly",
+      "coily",
+      "ponytail",
+      "bun",
+      "braids",
+      "bob cut",
+      "pixie cut"
+    ],
+    "outfits": [
+      "athleisure set",
+      "casual outfit",
+      "business suit",
+      "evening dress",
+      "streetwear",
+      "swimwear",
+      "sportswear",
+      "leather jacket + jeans",
+      "minimalist monochrome"
+    ],
+    "negative_presets": [
+      "none",
+      "low quality, blurry, artifacts",
+      "extra fingers, deformed hands",
+      "bad anatomy, distorted face",
+      "text, watermark, logo"
+    ],
+    "lens_types": [
+      "portrait lens",
+      "wide-angle lens",
+      "standard lens",
+      "telephoto lens",
+      "macro lens"
+    ],
+    "camera_angles": [
+      "eye-level",
+      "low angle",
+      "high angle",
+      "overhead",
+      "Dutch tilt",
+      "three-quarter angle"
+    ],
+    "lighting_modifiers": [
+      "softbox",
+      "ring light",
+      "rim light",
+      "backlight",
+      "fill light",
+      "bounce light",
+      "neon signage"
+    ],
+    "weather": [
+      "clear",
+      "cloudy",
+      "rainy",
+      "foggy",
+      "snowy",
+      "stormy"
+    ],
+    "color_grading": [
+      "neutral",
+      "warm",
+      "cool",
+      "cinematic teal & orange",
+      "pastel",
+      "high contrast"
+    ],
+    "materials": [
+      "cotton",
+      "denim",
+      "leather",
+      "silk",
+      "latex",
+      "linen",
+      "wool",
+      "spandex"
+    ],
+    "colors": [
+      "black",
+      "white",
+      "gray",
+      "beige",
+      "brown",
+      "red",
+      "orange",
+      "yellow",
+      "green",
+      "blue",
+      "purple",
+      "pink"
+    ]
+  },
+  "fields": [
+    {
+      "id": "scene.location",
+      "path": "scene.location",
+      "scope": "scene",
+      "type": "string",
+      "label": "Location",
+      "category": "Scene",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.scene_locations",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Where the scene takes place.",
+      "examples": [
+        "Studio",
+        "Street at night",
+        "Forest clearing"
+      ]
+    },
+    {
+      "id": "scene.time_of_day",
+      "path": "scene.time_of_day",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Time of Day",
+      "category": "Scene",
+      "order": 20,
+      "control": {
+        "kind": "select",
+        "source": "vocab.time_of_day",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "examples": [
+        "Morning",
+        "Golden hour",
+        "Night"
+      ]
+    },
+    {
+      "id": "scene.environment",
+      "path": "scene.environment",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Environment",
+      "category": "Scene",
+      "order": 30,
+      "control": {
+        "kind": "select",
+        "source": "vocab.environments",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Atmosphere and environmental conditions."
+    },
+    {
+      "id": "scene.lighting.style",
+      "path": "scene.lighting.style",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Lighting Style",
+      "category": "Lighting",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.lighting_styles",
+        "typeahead": true,
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "scene.lighting.intensity",
+      "path": "scene.lighting.intensity",
+      "scope": "scene",
+      "type": "number",
+      "label": "Lighting Intensity",
+      "category": "Lighting",
+      "order": 20,
+      "control": {
+        "kind": "slider",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "%"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Relative intensity (0–100)."
+    },
+    {
+      "id": "scene.camera.shot",
+      "path": "scene.camera.shot",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Shot Type",
+      "category": "Camera",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.camera_shots",
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "scene.camera.focal_length",
+      "path": "scene.camera.focal_length",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Focal Length",
+      "category": "Camera",
+      "order": 20,
+      "control": {
+        "kind": "select",
+        "source": "vocab.focal_lengths",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Common focal lengths; custom allowed."
+    },
+    {
+      "id": "scene.camera.angle",
+      "path": "scene.camera.angle",
+      "scope": "scene",
+      "type": "string",
+      "label": "Camera Angle",
+      "category": "Camera",
+      "order": 30,
+      "control": {
+        "kind": "input",
+        "placeholder": "e.g., eye-level, low angle…"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Angle relative to subject."
+    },
+    {
+      "id": "scene.composition.description",
+      "path": "scene.composition.description",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Composition",
+      "category": "Composition",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.composition_styles",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "scene.effects.description",
+      "path": "scene.effects.description",
+      "scope": "scene",
+      "type": "enum",
+      "label": "Effects",
+      "category": "Effects",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.effects_styles",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Visual effects or post-processing notes."
+    },
+    {
+      "id": "style.render_style",
+      "path": "style.render_style",
+      "scope": "global",
+      "type": "enum",
+      "label": "Render Style",
+      "category": "Style",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.render_styles",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "style.mood",
+      "path": "style.mood",
+      "scope": "global",
+      "type": "enum",
+      "label": "Mood",
+      "category": "Style",
+      "order": 20,
+      "control": {
+        "kind": "select",
+        "source": "vocab.moods",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "style.negative_prompts",
+      "path": "style.negative_prompts",
+      "scope": "global",
+      "type": "enum",
+      "label": "Negative Prompts",
+      "category": "Style",
+      "order": 30,
+      "control": {
+        "kind": "select",
+        "source": "vocab.negative_presets",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Content/attributes to avoid in generation."
+    },
+    {
+      "id": "technical.quality",
+      "path": "technical.quality",
+      "scope": "technical",
+      "type": "enum",
+      "label": "Quality",
+      "category": "Technical",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.quality",
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "technical.aspect_ratio",
+      "path": "technical.aspect_ratio",
+      "scope": "technical",
+      "type": "string",
+      "label": "Aspect Ratio",
+      "category": "Technical",
+      "order": 20,
+      "control": {
+        "kind": "input",
+        "placeholder": "e.g., 1:1, 16:9, 9:16"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "character.id",
+      "path": "characters[].id",
+      "scope": "character",
+      "type": "string",
+      "label": "Character ID",
+      "category": "Advanced",
+      "order": 1,
+      "control": {
+        "kind": "readonly"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Backend stable identifier."
+    },
+    {
+      "id": "character.name",
+      "path": "characters[].name",
+      "scope": "character",
+      "type": "string",
+      "label": "Name",
+      "category": "Pose & Action",
+      "order": 1,
+      "control": {
+        "kind": "input",
+        "placeholder": "e.g., Maya"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      }
+    },
+    {
+      "id": "character.gender",
+      "path": "characters[].gender",
+      "scope": "character",
+      "type": "enum",
+      "label": "Gender",
+      "category": "Body",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.gender",
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.height_cm",
+      "path": "characters[].body.height_cm",
+      "scope": "character",
+      "type": "number",
+      "label": "Height",
+      "category": "Body",
+      "order": 20,
+      "control": {
+        "kind": "stepper",
+        "min": 120,
+        "max": 220,
+        "step": 1,
+        "unit": "cm"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.pose",
+      "path": "characters[].pose",
+      "scope": "character",
+      "type": "enum",
+      "label": "Pose",
+      "category": "Pose & Action",
+      "order": 20,
+      "control": {
+        "kind": "select",
+        "source": "vocab.poses",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.action",
+      "path": "characters[].action",
+      "scope": "character",
+      "type": "enum",
+      "label": "Action",
+      "category": "Pose & Action",
+      "order": 30,
+      "control": {
+        "kind": "select",
+        "source": "vocab.actions",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.face.eyes.color",
+      "path": "characters[].face.eyes.color",
+      "scope": "character",
+      "type": "enum",
+      "label": "Eye Color",
+      "category": "Face",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.eye_colors",
+        "typeahead": true,
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.face.freckles",
+      "path": "characters[].face.freckles",
+      "scope": "character",
+      "type": "boolean",
+      "label": "Freckles",
+      "category": "Face",
+      "order": 20,
+      "control": {
+        "kind": "segmented",
+        "options": "vocab.yes_no"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.face.makeup.style",
+      "path": "characters[].face.makeup.style",
+      "scope": "character",
+      "type": "enum",
+      "label": "Makeup",
+      "category": "Face",
+      "order": 30,
+      "control": {
+        "kind": "select",
+        "source": "vocab.makeup_styles",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.hair.color",
+      "path": "characters[].hair.color",
+      "scope": "character",
+      "type": "enum",
+      "label": "Hair Color",
+      "category": "Hair",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.hair_colors",
+        "typeahead": true,
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.hair.length",
+      "path": "characters[].hair.length",
+      "scope": "character",
+      "type": "enum",
+      "label": "Hair Length",
+      "category": "Hair",
+      "order": 20,
+      "control": {
+        "kind": "select",
+        "source": "vocab.hair_lengths",
+        "allow_custom": true
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": true,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.hair.style",
+      "path": "characters[].hair.style",
+      "scope": "character",
+      "type": "enum",
+      "label": "Hair Style",
+      "category": "Hair",
+      "order": 30,
+      "control": {
+        "kind": "select",
+        "source": "vocab.hair_styles",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.outfit.description",
+      "path": "characters[].outfit.description",
+      "scope": "character",
+      "type": "enum",
+      "label": "Outfit",
+      "category": "Outfit",
+      "order": 10,
+      "control": {
+        "kind": "select",
+        "source": "vocab.outfits",
+        "typeahead": false,
+        "allow_custom": false
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "guided",
+          "expert"
+        ]
+      },
+      "recommended": true,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      }
+    },
+    {
+      "id": "character.accessories.list",
+      "path": "characters[].accessories",
+      "scope": "character",
+      "type": "array",
+      "label": "Accessories",
+      "category": "Accessories",
+      "order": 10,
+      "control": {
+        "kind": "list_editor",
+        "item_type": "string",
+        "add_label": "Add accessory"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": true,
+        "scopes": [
+          "this",
+          "all",
+          "selected"
+        ]
+      },
+      "help_text": "List of accessories (strings)."
+    },
+    {
+      "id": "advanced.unmapped",
+      "path": "notes.unmapped",
+      "scope": "advanced",
+      "type": "object",
+      "label": "Unmapped Fields",
+      "category": "Advanced",
+      "order": 900,
+      "control": {
+        "kind": "json_viewer"
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "Data preserved from import that is not mapped to canonical fields."
+    },
+    {
+      "id": "advanced.source_text",
+      "path": "notes.source_text",
+      "scope": "advanced",
+      "type": "string",
+      "label": "Source Text",
+      "category": "Advanced",
+      "order": 910,
+      "control": {
+        "kind": "textarea",
+        "rows": 8
+      },
+      "default_behavior": {
+        "kind": "keep_imported"
+      },
+      "visibility": {
+        "modes": [
+          "expert"
+        ]
+      },
+      "recommended": false,
+      "db_supported": false,
+      "bulk_edit": {
+        "supported": false
+      },
+      "help_text": "For non-JSON inputs or textual source blocks."
+    }
+  ],
+  "presets": [
+    {
+      "id": "preset.cinematic",
+      "label": "Cinematic",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Cinematic rim light"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.camera.focal_length",
+          "value": "35mm"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.effects.description",
+          "value": "subtle film grain, soft bloom"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "dramatic, high contrast"
+        }
+      ]
+    },
+    {
+      "id": "preset.studio_clean",
+      "label": "Studio Clean",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Soft studio"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.camera.shot",
+          "value": "Portrait"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "clean, minimal"
+        }
+      ]
+    },
+    {
+      "id": "preset.natural_daylight",
+      "label": "Natural Daylight",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Natural daylight"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.effects.description",
+          "value": "none"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "serene"
+        }
+      ]
+    },
+    {
+      "id": "preset.neon_city",
+      "label": "Neon City",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Neon"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.location",
+          "value": "Street"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.time_of_day",
+          "value": "Night"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.effects.description",
+          "value": "subtle bloom, light haze"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "mysterious"
+        }
+      ]
+    }
+  ],
+  "adapters": [
+    {
+      "id": "adapter.legacy_subject_bundle",
+      "detect": {
+        "any_top_level_keys": [
+          "subject",
+          "pose",
+          "setting",
+          "camera",
+          "lighting"
+        ]
+      },
+      "map_rules": [
+        {
+          "from": "setting.location",
+          "to_field_id": "scene.location"
+        },
+        {
+          "from": "setting.time_of_day",
+          "to_field_id": "scene.time_of_day"
+        },
+        {
+          "from": "lighting",
+          "to_field_id": "scene.lighting.style"
+        },
+        {
+          "from": "camera.shot",
+          "to_field_id": "scene.camera.shot"
+        },
+        {
+          "from": "camera.focal_length",
+          "to_field_id": "scene.camera.focal_length"
+        },
+        {
+          "from": "pose",
+          "to_field_id": "character.pose"
+        },
+        {
+          "from": "subject.name",
+          "to_field_id": "character.name"
+        },
+        {
+          "from": "subject.gender",
+          "to_field_id": "character.gender"
+        },
+        {
+          "from": "subject.hair.color",
+          "to_field_id": "character.hair.color"
+        },
+        {
+          "from": "subject.hair.length",
+          "to_field_id": "character.hair.length"
+        },
+        {
+          "from": "subject.hair.style",
+          "to_field_id": "character.hair.style"
+        },
+        {
+          "from": "subject.face.eyes.color",
+          "to_field_id": "character.face.eyes.color"
+        },
+        {
+          "from": "subject.face.freckles",
+          "to_field_id": "character.face.freckles"
+        },
+        {
+          "from": "subject.face.makeup",
+          "to_field_id": "character.face.makeup.style"
+        },
+        {
+          "from": "clothing",
+          "to_field_id": "character.outfit.description"
+        },
+        {
+          "from": "jewelry",
+          "to_field_id": "character.accessories.list"
+        }
+      ],
+      "conflicts": {
+        "strategy": "prefer_nested_subject",
+        "log_to_notes_unmapped": true,
+        "duplicate_resolution": "most_specific_wins"
+      }
+    },
+    {
+      "id": "adapter.image_metadata_schema",
+      "detect": {
+        "any_top_level_keys": [
+          "image_metadata",
+          "composition",
+          "effects"
+        ]
+      },
+      "map_rules": [
+        {
+          "from": "image_metadata.location",
+          "to_field_id": "scene.location"
+        },
+        {
+          "from": "image_metadata.time_of_day",
+          "to_field_id": "scene.time_of_day"
+        },
+        {
+          "from": "composition",
+          "to_field_id": "scene.composition.description"
+        },
+        {
+          "from": "effects",
+          "to_field_id": "scene.effects.description"
+        },
+        {
+          "from": "subject",
+          "to": "notes.unmapped.subject"
+        }
+      ],
+      "conflicts": {
+        "strategy": "prefer_specific",
+        "log_to_notes_unmapped": true
+      }
+    },
+    {
+      "id": "adapter.characters_array_schema",
+      "detect": {
+        "any_top_level_keys": [
+          "characters"
+        ],
+        "path_exists": "characters[0]"
+      },
+      "map_rules": [
+        {
+          "from": "scene",
+          "to": "scene"
+        },
+        {
+          "from": "characters",
+          "to": "characters"
+        },
+        {
+          "from": "style",
+          "to": "style"
+        },
+        {
+          "from": "technical",
+          "to": "technical"
+        }
+      ],
+      "conflicts": {
+        "strategy": "canonical_passthrough"
+      }
+    },
+    {
+      "id": "adapter.text_or_markdown",
+      "detect": {
+        "content_types": [
+          "text/plain",
+          "text/markdown"
+        ],
+        "fallback": true
+      },
+      "map_rules": [
+        {
+          "from": "$RAW_TEXT",
+          "to": "notes.source_text"
+        }
+      ],
+      "conflicts": {
+        "strategy": "store_as_source_text"
+      }
+    }
+  ],
+  "migrations": [
+    {
+      "from": "1.2.0",
+      "to": "1.3.0",
+      "steps": [
+        {
+          "op": "add_field",
+          "field_id": "character.accessories.list"
+        },
+        {
+          "op": "rename_field",
+          "old_field_id": "character.makeup.style",
+          "new_field_id": "character.face.makeup.style"
+        },
+        {
+          "op": "move_path",
+          "from": "subject",
+          "to": "notes.unmapped.subject",
+          "when": "imported_noncanonical"
+        }
+      ]
+    }
+  ]
+}

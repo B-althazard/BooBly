@@ -3,6 +3,16 @@
   "schema": 1,
   "entries": [
     {
+      "version": "v1_4_5_Alpha",
+      "semver": "1.4.5-alpha",
+      "date": "2026-02-21",
+      "changes": [
+        "Fix Import JSON editor crash: jsonEditor now in global scope (codeBlock missing brace).",
+        "Update versioned bundle filename to bust caches.",
+        "Update service worker precache + master file + manifest + changelog."
+      ]
+    },
+    {
       "version": "v1_4_4_Alpha",
       "date": "2026-02-21",
       "changes": [
@@ -255,7 +265,7 @@
       ]
     }
   ],
-  "current_version": "v1_4_4_Alpha",
-  "current_semver": "1.4.4-alpha",
+  "current_version": "v1_4_5_Alpha",
+  "current_semver": "1.4.5-alpha",
   "updated_at": "2026-02-21"
 }
