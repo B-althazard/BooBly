@@ -3,6 +3,59 @@
   "schema": 1,
   "entries": [
     {
+      "version": "v1_4_2_Alpha",
+      "semver": "1.4.2-alpha",
+      "date": "2026-02-21",
+      "changes": [
+        "Fix SW precache mismatch (master file reference).",
+        "Ship versioned app bundle to avoid stale caching on GitHub Pages/CDN.",
+        "Keep CSP strict; inline-script warnings are likely extension injections."
+      ]
+    },
+    {
+      "version": "1.4.1-alpha",
+      "date": "2026-02-21",
+      "changes": [
+        "UI/UX workflow: added stepper (Import → Edit → Export) and disabled navigation until prerequisites are met",
+        "Import page: reduced cognitive load by promoting primary actions; moved Merger into Advanced collapsible",
+        "Accessibility: improved navigation semantics and ARIA states for disabled steps",
+        "Bugfix: removed stray slash that could break JS parsing in some builds"
+      ]
+    },
+    {
+      "version": "1_4_0_Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "Mobile QA matrix checklist added in Settings.",
+        "Review Changes modal now includes 'Continue to Export' for happy-path flow.",
+        "Vocab expanded and master presets enriched (Natural Daylight, Neon City).",
+        "Blank preset added (Canonical).",
+        "Preset Merger added on Import: merge 2+ JSON files into one canonical output.",
+        "Master Manager added in Settings: upload master, validate, diff preview, activate, reset to bundled.",
+        "Adapter log UI added (stored in notes.adapter_log).",
+        "Canonical validation added (import, merge, convert). Import Report now shows adapter log + validation details.",
+        "Guided mode now forbids all freeform text inputs (no inline inputs/textareas).",
+        "Converted prior freeform Guided fields (environment, composition, effects, mood, negatives, pose, action, hair style, outfit) to controlled pickers backed by master-file vocab lists.",
+        "Added master-file guided_policy: allow_freeform=false and guided_allowed_controls.",
+        "Expanded vocab scaffolds for environments, composition styles, effects, moods, poses, actions, hair styles, outfits, negative presets.",
+        "Any remaining freeform controls are Expert-only."
+      ]
+    },
+    {
+      "version": "1.4.0_Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "SiliconTitsUI 2.0 foundation: unified spacing tokens, consistent button/input sizing, and restored styling for missing UI classes (JSON table + code viewer + toggles).",
+        "Import: preset picker is now responsive; tiles are constrained with proper object-fit and mobile breakpoints.",
+        "Import: JSON Data Expand/Collapse now works (restored kv table styling + collapsed gradient fade).",
+        "Edit (Guided): all category cards start collapsed by default; categories auto-open only when containing edits.",
+        "Export: restored toggle styling and added Copy JSON + Download JSON.",
+        "Export: added Prefix/Suffix wrapper fields for model-specific pre/post formatting.",
+        "Settings: wallpaper picker now uses a styled button (file input hidden) for consistent padding and layout.",
+        "Console: capped height with internal scroll; syntax-highlighted JSON code card restored."
+      ]
+    },
+    {
       "version": "1.0.0",
       "date": "2026-02-19",
       "changes": [
@@ -164,6 +217,23 @@
         "Canonical conversion button for legacy JSON (non-destructive; source preserved in notes.unmapped)",
         "Service worker cache bump + master file precached"
       ]
+    },
+    {
+      "version": "1.4.0-Alpha",
+      "date": "2026-02-20",
+      "changes": [
+        "UI overhaul: import/edit/export navigation and redesigned layout.",
+        "Mobile-first spacing system: consistent padding, button sizing, touch targets.",
+        "Guided editor rebuilt with collapsible category cards and standardized field rows.",
+        "Edit toolbar is sticky with change count, review changes, and export shortcut.",
+        "Expert mode redesigned as split workbench (categories/keys left, inspector right) with filters and safe reset.",
+        "Console/error boxes fixed height with internal scroll (no layout jumps).",
+        "Guided selects now use an iOS-style tap-to-pick cell with a modal dropdown (restored dropdown functionality).",
+        "Added Randomize button in Edit toolbar to randomize structured guided fields (select/segmented/slider/stepper) respecting character scope."
+      ]
     }
-  ]
+  ],
+  "current_version": "v1_4_2_Alpha",
+  "current_semver": "1.4.2-alpha",
+  "updated_at": "2026-02-21"
 }

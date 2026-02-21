@@ -17,5 +17,6 @@
       "type": "image/png"
     }
   ],
-  "scope": "./"
+  "scope": "./",
+  "version": "1.4.2-alpha"
 }

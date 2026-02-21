@@ -1,14 +1,19 @@
 {
   "meta": {
-    "master_version": "1.3.0",
+    "master_version": "v1_4_2_Alpha",
     "canonical_version": "1.3.0",
     "generated_at": "2026-02-20",
-    "app_min_version": "1.2.9",
+    "app_min_version": "1.4.0-alpha",
     "notes": [
       "Option A: schema + UI metadata. Examples are not embedded.",
       "Runtime UI rendering decisions are driven from `fields`, `categories`, `ui`, `vocab`, `presets`.",
       "Adapters accept legacy formats and convert into canonical 1.3.0."
-    ]
+    ],
+    "previous_master_versions": [
+      "1.3.1"
+    ],
+    "master_semver": "1.4.2-alpha",
+    "updated_at": "2026-02-21"
   },
   "ui": {
     "modes": [
@@ -67,6 +72,16 @@
       "default_chip_format": "Default (keep: {{imported}})",
       "override_chip_format": "Overridden ({{current}})",
       "show_original_on_demand": true
+    },
+    "guided_policy": {
+      "allow_freeform": false,
+      "guided_allowed_controls": [
+        "select",
+        "segmented",
+        "slider",
+        "stepper",
+        "readonly"
+      ]
     }
   },
   "canonical_model": {
@@ -267,6 +282,161 @@
       "Golden hour",
       "Dusk",
       "Night"
+    ],
+    "environments": [
+      "tropical beach shoreline",
+      "city street",
+      "studio backdrop",
+      "forest",
+      "mountain lake",
+      "bedroom",
+      "rooftop",
+      "cafe interior",
+      "desert",
+      "snowy landscape"
+    ],
+    "composition_styles": [
+      "centered portrait",
+      "rule of thirds",
+      "symmetrical",
+      "leading lines",
+      "shallow depth of field",
+      "wide establishing shot",
+      "close-up detail"
+    ],
+    "effects_styles": [
+      "none",
+      "subtle film grain",
+      "bokeh",
+      "soft bloom",
+      "lens flare",
+      "chromatic aberration (subtle)",
+      "vignette (subtle)"
+    ],
+    "moods": [
+      "neutral",
+      "dreamy",
+      "dramatic",
+      "romantic",
+      "mysterious",
+      "playful",
+      "tense",
+      "serene"
+    ],
+    "poses": [
+      "standing",
+      "seated",
+      "walking",
+      "leaning",
+      "kneeling",
+      "lying down",
+      "arms crossed",
+      "hands on hips",
+      "looking over shoulder"
+    ],
+    "actions": [
+      "none",
+      "smiling",
+      "laughing",
+      "waving",
+      "reading",
+      "drinking coffee",
+      "running fingers through hair",
+      "looking at camera",
+      "looking away"
+    ],
+    "hair_styles": [
+      "straight",
+      "wavy",
+      "curly",
+      "coily",
+      "ponytail",
+      "bun",
+      "braids",
+      "bob cut",
+      "pixie cut"
+    ],
+    "outfits": [
+      "athleisure set",
+      "casual outfit",
+      "business suit",
+      "evening dress",
+      "streetwear",
+      "swimwear",
+      "sportswear",
+      "leather jacket + jeans",
+      "minimalist monochrome"
+    ],
+    "negative_presets": [
+      "none",
+      "low quality, blurry, artifacts",
+      "extra fingers, deformed hands",
+      "bad anatomy, distorted face",
+      "text, watermark, logo"
+    ],
+    "lens_types": [
+      "portrait lens",
+      "wide-angle lens",
+      "standard lens",
+      "telephoto lens",
+      "macro lens"
+    ],
+    "camera_angles": [
+      "eye-level",
+      "low angle",
+      "high angle",
+      "overhead",
+      "Dutch tilt",
+      "three-quarter angle"
+    ],
+    "lighting_modifiers": [
+      "softbox",
+      "ring light",
+      "rim light",
+      "backlight",
+      "fill light",
+      "bounce light",
+      "neon signage"
+    ],
+    "weather": [
+      "clear",
+      "cloudy",
+      "rainy",
+      "foggy",
+      "snowy",
+      "stormy"
+    ],
+    "color_grading": [
+      "neutral",
+      "warm",
+      "cool",
+      "cinematic teal & orange",
+      "pastel",
+      "high contrast"
+    ],
+    "materials": [
+      "cotton",
+      "denim",
+      "leather",
+      "silk",
+      "latex",
+      "linen",
+      "wool",
+      "spandex"
+    ],
+    "colors": [
+      "black",
+      "white",
+      "gray",
+      "beige",
+      "brown",
+      "red",
+      "orange",
+      "yellow",
+      "green",
+      "blue",
+      "purple",
+      "pink"
     ]
   },
   "fields": [
@@ -341,13 +511,15 @@
       "id": "scene.environment",
       "path": "scene.environment",
       "scope": "scene",
-      "type": "string",
+      "type": "enum",
       "label": "Environment",
       "category": "Scene",
       "order": 30,
       "control": {
-        "kind": "input",
-        "placeholder": "e.g., rainy, foggy, crowded…"
+        "kind": "select",
+        "source": "vocab.environments",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -499,7 +671,6 @@
       },
       "visibility": {
         "modes": [
-          "guided",
           "expert"
         ]
       },
@@ -514,14 +685,15 @@
       "id": "scene.composition.description",
       "path": "scene.composition.description",
       "scope": "scene",
-      "type": "string",
+      "type": "enum",
       "label": "Composition",
       "category": "Composition",
       "order": 10,
       "control": {
-        "kind": "textarea",
-        "rows": 3,
-        "placeholder": "e.g., centered portrait, rule of thirds…"
+        "kind": "select",
+        "source": "vocab.composition_styles",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -542,14 +714,15 @@
       "id": "scene.effects.description",
       "path": "scene.effects.description",
       "scope": "scene",
-      "type": "string",
+      "type": "enum",
       "label": "Effects",
       "category": "Effects",
       "order": 10,
       "control": {
-        "kind": "textarea",
-        "rows": 3,
-        "placeholder": "e.g., bokeh, film grain…"
+        "kind": "select",
+        "source": "vocab.effects_styles",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -599,13 +772,15 @@
       "id": "style.mood",
       "path": "style.mood",
       "scope": "global",
-      "type": "string",
+      "type": "enum",
       "label": "Mood",
       "category": "Style",
       "order": 20,
       "control": {
-        "kind": "input",
-        "placeholder": "e.g., dreamy, tense, romantic…"
+        "kind": "select",
+        "source": "vocab.moods",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -626,14 +801,15 @@
       "id": "style.negative_prompts",
       "path": "style.negative_prompts",
       "scope": "global",
-      "type": "string",
+      "type": "enum",
       "label": "Negative Prompts",
       "category": "Style",
       "order": 30,
       "control": {
-        "kind": "textarea",
-        "rows": 4,
-        "placeholder": "What to avoid…"
+        "kind": "select",
+        "source": "vocab.negative_presets",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -696,7 +872,6 @@
       },
       "visibility": {
         "modes": [
-          "guided",
           "expert"
         ]
       },
@@ -749,7 +924,6 @@
       },
       "visibility": {
         "modes": [
-          "guided",
           "expert"
         ]
       },
@@ -831,13 +1005,15 @@
       "id": "character.pose",
       "path": "characters[].pose",
       "scope": "character",
-      "type": "string",
+      "type": "enum",
       "label": "Pose",
       "category": "Pose & Action",
       "order": 20,
       "control": {
-        "kind": "input",
-        "placeholder": "e.g., standing, seated…"
+        "kind": "select",
+        "source": "vocab.poses",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -863,13 +1039,15 @@
       "id": "character.action",
       "path": "characters[].action",
       "scope": "character",
-      "type": "string",
+      "type": "enum",
       "label": "Action",
       "category": "Pose & Action",
       "order": 30,
       "control": {
-        "kind": "input",
-        "placeholder": "e.g., smiling, waving…"
+        "kind": "select",
+        "source": "vocab.actions",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -1061,13 +1239,15 @@
       "id": "character.hair.style",
       "path": "characters[].hair.style",
       "scope": "character",
-      "type": "string",
+      "type": "enum",
       "label": "Hair Style",
       "category": "Hair",
       "order": 30,
       "control": {
-        "kind": "input",
-        "placeholder": "e.g., wavy, ponytail…"
+        "kind": "select",
+        "source": "vocab.hair_styles",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -1093,14 +1273,15 @@
       "id": "character.outfit.description",
       "path": "characters[].outfit.description",
       "scope": "character",
-      "type": "string",
+      "type": "enum",
       "label": "Outfit",
       "category": "Outfit",
       "order": 10,
       "control": {
-        "kind": "textarea",
-        "rows": 2,
-        "placeholder": "e.g., black leather jacket…"
+        "kind": "select",
+        "source": "vocab.outfits",
+        "typeahead": false,
+        "allow_custom": false
       },
       "default_behavior": {
         "kind": "keep_imported"
@@ -1140,7 +1321,6 @@
       },
       "visibility": {
         "modes": [
-          "guided",
           "expert"
         ]
       },
@@ -1259,6 +1439,62 @@
           "op": "set",
           "field_id": "style.mood",
           "value": "clean, minimal"
+        }
+      ]
+    },
+    {
+      "id": "preset.natural_daylight",
+      "label": "Natural Daylight",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Natural daylight"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.effects.description",
+          "value": "none"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "serene"
+        }
+      ]
+    },
+    {
+      "id": "preset.neon_city",
+      "label": "Neon City",
+      "scope": "scene",
+      "preview": true,
+      "patch": [
+        {
+          "op": "set",
+          "field_id": "scene.lighting.style",
+          "value": "Neon"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.location",
+          "value": "Street"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.time_of_day",
+          "value": "Night"
+        },
+        {
+          "op": "set",
+          "field_id": "scene.effects.description",
+          "value": "subtle bloom, light haze"
+        },
+        {
+          "op": "set",
+          "field_id": "style.mood",
+          "value": "mysterious"
         }
       ]
     }
