@@ -1,5 +1,5 @@
-// BooBly Service Worker (v1_4_0_Alpha)
-const VERSION = 'v1_4_0_Alpha';
+// BooBly Service Worker (v1_4_1_Alpha)
+const VERSION = 'v1_4_1_Alpha';
 const STATIC_CACHE = `boobly-static-${VERSION}`;
 const RUNTIME_CACHE = `boobly-runtime-${VERSION}`;
 
@@ -13,7 +13,7 @@ const ASSETS = [
   "./prompts.json",
   "./changelog.json",
   "./presets.json",
-  "./master_file_v1_4_0_Alpha.json",
+  "./master_file_v1_4_1_Alpha.json",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

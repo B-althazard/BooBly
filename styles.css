@@ -140,6 +140,45 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,45,85,.55); box
   box-shadow: 0 0 0 4px rgba(255,45,85,.10);
 }
 
+
+/* Stepper */
+.stepper{
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 var(--s4) var(--s2);
+  display:flex;
+  gap: var(--s2);
+}
+.step{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: var(--s2);
+  height: 40px;
+  border-radius: var(--r2);
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  cursor:pointer;
+  box-shadow: none;
+}
+.step .dot{
+  width:10px;height:10px;border-radius:999px;
+  border: 2px solid rgba(255,45,85,.35);
+  background: transparent;
+}
+.step.done .dot{ background: rgba(255,45,85,.25); }
+.step.active{
+  border-color: rgba(255,45,85,.35);
+  box-shadow: 0 0 0 4px rgba(255,45,85,.10);
+}
+.step.disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+.step:active{transform: translateY(1px)}
+.tabBtn.disabled{opacity:.55; cursor:not-allowed}
+
 /* Page container */
 .screen{
   max-width: 980px;

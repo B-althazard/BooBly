@@ -90,7 +90,7 @@ function modalView(title, bodyNode, actions = []) {
   ]);
   openModal(node);
 }
-/ BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
+// BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
 
 const state = {
   db: null,
@@ -167,7 +167,7 @@ const STORAGE = {
   master: "boobly.master",
 };
 
-const VERSION = "v1_4_0_Alpha";
+const VERSION = "v1_4_1_Alpha";
 
 
 /* --------------------------
@@ -712,22 +712,78 @@ function header(title) {
   return el("div", { class: "header" }, [left, t, right]);
 }
 
+
+function stepper() {
+  const steps = [
+    { id: "import", label: "Import" },
+    { id: "edit", label: "Edit" },
+    { id: "export", label: "Export" },
+  ];
+
+  const canEdit = !!state.editableJson;
+  const canExport = !!state.editableJson;
+
+  const isEnabled = (id) => {
+    if (id === "import") return true;
+    if (id === "edit") return canEdit;
+    if (id === "export") return canExport;
+    return true;
+  };
+
+  const mk = (s, idx) => {
+    const enabled = isEnabled(s.id);
+    const cls = [
+      "step",
+      state.page === s.id ? "active" : "",
+      enabled ? "" : "disabled",
+      (state.page !== "import" && idx < steps.findIndex(x=>x.id===state.page)) ? "done" : ""
+    ].filter(Boolean).join(" ");
+
+    return el("button", {
+      class: cls,
+      type: "button",
+      "aria-current": state.page === s.id ? "step" : null,
+      "aria-disabled": enabled ? null : "true",
+      title: enabled ? s.label : "Complete previous step first",
+      onclick: () => {
+        if (!enabled) return toast("Complete the previous step first");
+        state.page = s.id; persistDraft(); rerender();
+      }
+    }, [
+      el("span", { class: "dot", "aria-hidden": "true" }, ""),
+      el("span", { class: "txt" }, s.label),
+    ]);
+  };
+
+  return el("div", { class: "stepper", role: "navigation", "aria-label": "Workflow" }, steps.map(mk));
+}
+
 function tabs() {
-  const mk = (p, ico, lbl) =>
+  const canEdit = !!state.editableJson;
+  const canExport = !!state.editableJson;
+
+  const mk = (p, ico, lbl, enabled) =>
     el("button",
       {
-        class: "tabBtn" + (state.page === p ? " active" : ""),
-        onclick: () => { state.page = p; persistDraft(); rerender(); },
+        class: "tabBtn" + (state.page === p ? " active" : "") + (enabled ? "" : " disabled"),
+        type: "button",
+        "aria-label": lbl,
+        "aria-disabled": enabled ? null : "true",
+        onclick: () => {
+          if (!enabled) return toast("Complete the previous step first");
+          state.page = p; persistDraft(); rerender();
+        },
       },
-      [el("span", { class: "ico" }, ico), el("span", { class: "lbl" }, lbl)]
+      [el("span", { class: "ico", "aria-hidden":"true" }, ico), el("span", { class: "lbl" }, lbl)]
     );
 
-  return el("div", { class: "tabs" }, [
-    mk("import", "⬆️", "Import"),
-    mk("edit", "✏️", "Edit"),
-    mk("export", "📤", "Export"),
+  return el("div", { class: "tabs", role: "navigation", "aria-label": "Primary" }, [
+    mk("import", "⬆️", "Import", true),
+    mk("edit", "✏️", "Edit", canEdit),
+    mk("export", "📤", "Export", canExport),
   ]);
 }
+
 
 function card(title, bodyNodes) {
   return el("div", { class: "card" }, [el("div", { class: "cardBody" }, [el("div", { class: "cardTitle" }, title), ...bodyNodes])]);
@@ -1230,15 +1286,6 @@ const mergerCard = card("Preset Merger", [
 
   const topCards = el("div", { class: "stackCol" }, [
     reportCard,
-    mergerCard,
-    el("div", { class: "card" }, [
-      el("div", { class: "cardBody" }, [
-        el("div", { class: "small" }, "Select Preset"),
-        hr(),
-        el("div", { style: "font-weight:900;font-size:18px;margin-bottom:6px" }, "Choose from pre-made characters"),
-        presetsBtn,
-      ]),
-    ]),
     el("div", { class: "card" }, [
       el("div", { class: "cardBody" }, [
         el("div", { class: "small" }, "Import JSON"),
@@ -1248,6 +1295,22 @@ const mergerCard = card("Preset Merger", [
         upload,
       ]),
     ]),
+    el("div", { class: "card" }, [
+      el("div", { class: "cardBody" }, [
+        el("div", { class: "small" }, "Select Preset"),
+        hr(),
+        el("div", { style: "font-weight:900;font-size:18px;margin-bottom:6px" }, "Choose from pre-made characters"),
+        presetsBtn,
+      ]),
+    ]),
+    collapsibleCard({
+      id: "adv_merger",
+      title: "Advanced",
+      subtitle: "Merge multiple JSON files",
+      defaultOpen: false,
+      bodyNodes: [mergerCard],
+    }),
+
   ]);
 
   const view = currentSummaryFields();
@@ -2543,6 +2606,7 @@ function rerender() {
   root.innerHTML = "";
   const overlay = el("div", { class: "wallpaperOverlay" }, []);
   overlay.appendChild(header(pageTitle()));
+  overlay.appendChild(stepper());
   let pageNode;
   try {
     pageNode = route();
