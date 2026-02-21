@@ -212,5 +212,8 @@
         "Added Randomize button in Edit toolbar to randomize structured guided fields (select/segmented/slider/stepper) respecting character scope."
       ]
     }
-  ]
+  ],
+  "current_version": "v1_4_0_Alpha",
+  "current_semver": "1.4.0-alpha",
+  "updated_at": "2026-02-21"
 }

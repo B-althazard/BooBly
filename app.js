@@ -1,4 +1,4 @@
-/
+//
 
 function validateMaster(m) {
   const issues = [];
@@ -2582,7 +2582,7 @@ async function init() {
 
   // Master file (Option A) — drives Guided/Expert editor.
   const mLS = loadLS(STORAGE.master, null);
-  state.master = mLS || (await fetchJson("master_file_v1_3_1.json").catch(() => null));
+  state.master = mLS || (await fetchJson("master_file_v1_4_0_Alpha.json").catch(() => null));
   if (state.master) saveLS(STORAGE.master, state.master);
   state.bundledMaster = JSON.parse(JSON.stringify(state.master));
 
