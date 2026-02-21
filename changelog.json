@@ -3,6 +3,15 @@
   "schema": 1,
   "entries": [
     {
+      "version": "v1_4_6_Alpha",
+      "semver": "1.4.6-alpha",
+      "date": "2026-02-21",
+      "changes": [
+        "Fix: remove stray closing brace that caused \"unexpected garbage after module\" syntax error (Firefox).",
+        "Deploy: bump versioned JS filename and SW cache version to force refresh."
+      ]
+    },
+    {
       "version": "v1_4_5_Alpha",
       "semver": "1.4.5-alpha",
       "date": "2026-02-21",
@@ -265,7 +274,7 @@
       ]
     }
   ],
-  "current_version": "v1_4_5_Alpha",
-  "current_semver": "1.4.5-alpha",
+  "current_version": "v1_4_6_Alpha",
+  "current_semver": "1.4.6-alpha",
   "updated_at": "2026-02-21"
 }
