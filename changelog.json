@@ -3,6 +3,14 @@
   "schema": 1,
   "entries": [
     {
+      "version": "v1_4_4_Alpha",
+      "date": "2026-02-21",
+      "changes": [
+        "Fix Import page crash (codeEditor undefined) by wiring JSON editor node properly.",
+        "Live JSON validation with line/column feedback in import editor."
+      ]
+    },
+    {
       "version": "v1_4_3_Alpha",
       "semver": "1.4.3-alpha",
       "date": "2026-02-21",
@@ -11,7 +19,7 @@
         "Toasts now render in foreground below header (z-index + fixed host).",
         "Edit page: added sticky action bar (Save, Copy, Optimize, Download JSON).",
         "Import page: added editable JSON code editor with syntax highlighting, line numbers, and error line marking.",
-        "Convert flows: Convert \u2192 Master now navigates to Edit; Convert \u2192 Canonical hardened with error handling and auto-switch to guided.",
+        "Convert flows: Convert → Master now navigates to Edit; Convert → Canonical hardened with error handling and auto-switch to guided.",
         "Guided editor: helper text now appears under every field (from master help_text/description with fallback).",
         "Responsive layout padding standardized."
       ]
@@ -30,7 +38,7 @@
       "version": "1.4.1-alpha",
       "date": "2026-02-21",
       "changes": [
-        "UI/UX workflow: added stepper (Import \u2192 Edit \u2192 Export) and disabled navigation until prerequisites are met",
+        "UI/UX workflow: added stepper (Import → Edit → Export) and disabled navigation until prerequisites are met",
         "Import page: reduced cognitive load by promoting primary actions; moved Merger into Advanced collapsible",
         "Accessibility: improved navigation semantics and ARIA states for disabled steps",
         "Bugfix: removed stray slash that could break JS parsing in some builds"
@@ -149,7 +157,7 @@
       "date": "2026-02-20",
       "changes": [
         "Major DB expansion for higher-fidelity generation",
-        "Added: Scene Construction block (10\u00d720), Lighting Detail block (10\u00d720), Visual Style block (10\u00d720)",
+        "Added: Scene Construction block (10×20), Lighting Detail block (10×20), Visual Style block (10×20)",
         "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets",
         "Added camera physics effects table + photography terminology"
       ]
@@ -169,7 +177,7 @@
       "date": "2026-02-20",
       "changes": [
         "Critical fix: Import no longer auto-converts JSON to Master template",
-        "Convert \u2192 Master now only runs when explicitly pressed",
+        "Convert → Master now only runs when explicitly pressed",
         "Export now outputs imported/edited JSON (no forced master merge)",
         "Cache/version bump"
       ]
@@ -208,7 +216,7 @@
         "Edit: added Generic Key Editor that works with any imported JSON (keys shown as-is, categorized, searchable)",
         "Default option added per key to preserve original imported value while allowing overrides",
         "Advanced Editor added now: edit scalar/object/array values via JSON-aware textarea with validation",
-        "DB lookup optimized via in-memory index for fast path\u2192values resolution"
+        "DB lookup optimized via in-memory index for fast path→values resolution"
       ]
     },
     {
@@ -216,7 +224,7 @@
       "date": "2026-02-20",
       "changes": [
         "Version bump to v1_2_9",
-        "Fix: DB path\u2192values lookup now uses the in-memory index in selectFromDb() (optimization active)",
+        "Fix: DB path→values lookup now uses the in-memory index in selectFromDb() (optimization active)",
         "Chore: updated app/service worker version headers and minor code cleanup"
       ]
     },
@@ -247,7 +255,7 @@
       ]
     }
   ],
-  "current_version": "v1_4_3_Alpha",
-  "current_semver": "1.4.3-alpha",
+  "current_version": "v1_4_4_Alpha",
+  "current_semver": "1.4.4-alpha",
   "updated_at": "2026-02-21"
 }
