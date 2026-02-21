@@ -3,49 +3,6 @@
   "schema": 1,
   "entries": [
     {
-      "version": "1.4.1-alpha",
-      "date": "2026-02-21",
-      "changes": [
-        "UI/UX workflow: added stepper (Import \u2192 Edit \u2192 Export) and disabled navigation until prerequisites are met",
-        "Import page: reduced cognitive load by promoting primary actions; moved Merger into Advanced collapsible",
-        "Accessibility: improved navigation semantics and ARIA states for disabled steps",
-        "Bugfix: removed stray slash that could break JS parsing in some builds"
-      ]
-    },
-    {
-      "version": "1_4_0_Alpha",
-      "date": "2026-02-20",
-      "changes": [
-        "Mobile QA matrix checklist added in Settings.",
-        "Review Changes modal now includes 'Continue to Export' for happy-path flow.",
-        "Vocab expanded and master presets enriched (Natural Daylight, Neon City).",
-        "Blank preset added (Canonical).",
-        "Preset Merger added on Import: merge 2+ JSON files into one canonical output.",
-        "Master Manager added in Settings: upload master, validate, diff preview, activate, reset to bundled.",
-        "Adapter log UI added (stored in notes.adapter_log).",
-        "Canonical validation added (import, merge, convert). Import Report now shows adapter log + validation details.",
-        "Guided mode now forbids all freeform text inputs (no inline inputs/textareas).",
-        "Converted prior freeform Guided fields (environment, composition, effects, mood, negatives, pose, action, hair style, outfit) to controlled pickers backed by master-file vocab lists.",
-        "Added master-file guided_policy: allow_freeform=false and guided_allowed_controls.",
-        "Expanded vocab scaffolds for environments, composition styles, effects, moods, poses, actions, hair styles, outfits, negative presets.",
-        "Any remaining freeform controls are Expert-only."
-      ]
-    },
-    {
-      "version": "1.4.0_Alpha",
-      "date": "2026-02-20",
-      "changes": [
-        "SiliconTitsUI 2.0 foundation: unified spacing tokens, consistent button/input sizing, and restored styling for missing UI classes (JSON table + code viewer + toggles).",
-        "Import: preset picker is now responsive; tiles are constrained with proper object-fit and mobile breakpoints.",
-        "Import: JSON Data Expand/Collapse now works (restored kv table styling + collapsed gradient fade).",
-        "Edit (Guided): all category cards start collapsed by default; categories auto-open only when containing edits.",
-        "Export: restored toggle styling and added Copy JSON + Download JSON.",
-        "Export: added Prefix/Suffix wrapper fields for model-specific pre/post formatting.",
-        "Settings: wallpaper picker now uses a styled button (file input hidden) for consistent padding and layout.",
-        "Console: capped height with internal scroll; syntax-highlighted JSON code card restored."
-      ]
-    },
-    {
       "version": "1.0.0",
       "date": "2026-02-19",
       "changes": [
@@ -125,7 +82,7 @@
       "date": "2026-02-20",
       "changes": [
         "Major DB expansion for higher-fidelity generation",
-        "Added: Scene Construction block (10\u00d720), Lighting Detail block (10\u00d720), Visual Style block (10\u00d720)",
+        "Added: Scene Construction block (10×20), Lighting Detail block (10×20), Visual Style block (10×20)",
         "Expanded hair styles/colors, outfits, framing, backgrounds, lighting presets",
         "Added camera physics effects table + photography terminology"
       ]
@@ -145,7 +102,7 @@
       "date": "2026-02-20",
       "changes": [
         "Critical fix: Import no longer auto-converts JSON to Master template",
-        "Convert \u2192 Master now only runs when explicitly pressed",
+        "Convert → Master now only runs when explicitly pressed",
         "Export now outputs imported/edited JSON (no forced master merge)",
         "Cache/version bump"
       ]
@@ -184,7 +141,7 @@
         "Edit: added Generic Key Editor that works with any imported JSON (keys shown as-is, categorized, searchable)",
         "Default option added per key to preserve original imported value while allowing overrides",
         "Advanced Editor added now: edit scalar/object/array values via JSON-aware textarea with validation",
-        "DB lookup optimized via in-memory index for fast path\u2192values resolution"
+        "DB lookup optimized via in-memory index for fast path→values resolution"
       ]
     },
     {
@@ -192,7 +149,7 @@
       "date": "2026-02-20",
       "changes": [
         "Version bump to v1_2_9",
-        "Fix: DB path\u2192values lookup now uses the in-memory index in selectFromDb() (optimization active)",
+        "Fix: DB path→values lookup now uses the in-memory index in selectFromDb() (optimization active)",
         "Chore: updated app/service worker version headers and minor code cleanup"
       ]
     },
@@ -207,23 +164,6 @@
         "Canonical conversion button for legacy JSON (non-destructive; source preserved in notes.unmapped)",
         "Service worker cache bump + master file precached"
       ]
-    },
-    {
-      "version": "1.4.0-Alpha",
-      "date": "2026-02-20",
-      "changes": [
-        "UI overhaul: import/edit/export navigation and redesigned layout.",
-        "Mobile-first spacing system: consistent padding, button sizing, touch targets.",
-        "Guided editor rebuilt with collapsible category cards and standardized field rows.",
-        "Edit toolbar is sticky with change count, review changes, and export shortcut.",
-        "Expert mode redesigned as split workbench (categories/keys left, inspector right) with filters and safe reset.",
-        "Console/error boxes fixed height with internal scroll (no layout jumps).",
-        "Guided selects now use an iOS-style tap-to-pick cell with a modal dropdown (restored dropdown functionality).",
-        "Added Randomize button in Edit toolbar to randomize structured guided fields (select/segmented/slider/stepper) respecting character scope."
-      ]
     }
-  ],
-  "current_version": "v1_4_1_Alpha",
-  "current_semver": "1.4.1-alpha",
-  "updated_at": "2026-02-21"
+  ]
 }

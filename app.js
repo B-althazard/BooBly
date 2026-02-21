@@ -1,96 +1,4 @@
-//
-
-function validateMaster(m) {
-  const issues = [];
-  if (!m || typeof m !== "object") return [{ level:"error", path:"$", message:"Master is not an object." }];
-  if (!m.meta || typeof m.meta !== "object") issues.push({ level:"error", path:"meta", message:"Missing meta." });
-  if (!m.meta?.master_version) issues.push({ level:"warn", path:"meta.master_version", message:"Missing master_version." });
-  if (!Array.isArray(m.categories)) issues.push({ level:"error", path:"categories", message:"categories must be an array." });
-  if (!Array.isArray(m.fields)) issues.push({ level:"error", path:"fields", message:"fields must be an array." });
-  const catIds = new Set((m.categories||[]).map(c=>c.id));
-  const fieldIds = new Set();
-  for (const [i,f] of (m.fields||[]).entries()) {
-    if (!f.id) issues.push({ level:"error", path:`fields[${i}].id`, message:"Missing field id." });
-    if (f.id && fieldIds.has(f.id)) issues.push({ level:"error", path:`fields[${i}].id`, message:`Duplicate field id ${f.id}.` });
-    if (f.id) fieldIds.add(f.id);
-    if (!f.path) issues.push({ level:"error", path:`fields[${i}].path`, message:"Missing path." });
-    if (!f.control?.kind) issues.push({ level:"warn", path:`fields[${i}].control.kind`, message:"Missing control kind." });
-    if (f.category && !catIds.has(f.category)) issues.push({ level:"warn", path:`fields[${i}].category`, message:`Unknown category '${f.category}'.` });
-    // validate vocab references
-    const src = f.control?.source;
-    if (typeof src === "string" && src.startsWith("vocab.")) {
-      const key = src.slice(6);
-      if (!m.vocab || !(key in m.vocab)) issues.push({ level:"error", path:`fields[${i}].control.source`, message:`Missing vocab '${key}'.` });
-      else if (!Array.isArray(m.vocab[key])) issues.push({ level:"error", path:`vocab.${key}`, message:"Vocab must be an array." });
-    }
-  }
-  return issues;
-}
-
-function canonicalizeAny(inputObj, master) {
-  const j = inputObj || {};
-  const hasCanonical = !!(j && (j.characters || j.scene || j.schema_version));
-  if (hasCanonical) {
-    const out = JSON.parse(JSON.stringify(j));
-    logAdapter(out, "canonical_passthrough", { note: "imported as-is" });
-    return out;
-  }
-  // minimal legacy → canonical conversion
-  const out = {
-    schema_version: master?.meta?.canonical_version || "1.3.0",
-    scene: {},
-    characters: [],
-    style: {},
-    technical: {},
-    notes: { unmapped: {}, source_text: "", adapter_log: [] },
-  };
-  out.notes.unmapped._source = JSON.parse(JSON.stringify(j));
-  logAdapter(out, "minimal_legacy_to_canonical", { note: "minimal mapping" });
-  const c0 = { id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())), name: "Character 1" };
-
-  const legacyName = getByPath(j, ["subject","identity","name"], "");
-  if (legacyName) c0.name = legacyName;
-  const hairColor = getByPath(j, ["subject","hair","color"], "");
-  if (hairColor) c0.hair = { ...(c0.hair||{}), color: hairColor };
-  const hairStyle = getByPath(j, ["subject","hair","style"], "");
-  if (hairStyle) c0.hair = { ...(c0.hair||{}), style: hairStyle };
-  const eyeColor = getByPath(j, ["subject","eyes","color"], "");
-  if (eyeColor) c0.face = { ...(c0.face||{}), eyes: { ...(c0.face?.eyes||{}), color: eyeColor } };
-  const freckles = getByPath(j, ["subject","skin","freckles"], "");
-  if (freckles) c0.face = { ...(c0.face||{}), freckles: !/^none/i.test(String(freckles)) };
-  const makeup = getByPath(j, ["subject","eyes","makeup"], "");
-  if (makeup) c0.face = { ...(c0.face||{}), makeup: { style: String(makeup) } };
-  const height = getByPath(j, ["subject","identity","height_cm"], null);
-  if (typeof height === "number") c0.body = { ...(c0.body||{}), height_cm: height };
-  const outfit = getByPath(j, ["clothing","outfit_type"], "") || getByPath(j, ["clothing"], "");
-  if (outfit) c0.outfit = { description: String(outfit) };
-
-  const env = getByPath(j, ["image_metadata","environment","location"], "");
-  if (env) out.scene.location = env;
-  const light = getByPath(j, ["image_metadata","lighting","type"], "");
-  if (light) out.scene.lighting = { style: String(light) };
-  const framing = getByPath(j, ["composition","framing"], "");
-  if (framing) out.scene.camera = { ...(out.scene.camera||{}), shot: String(framing) };
-
-  out.characters.push(c0);
-  return out;
-}
-
-function modalView(title, bodyNode, actions = []) {
-  const btns = actions.map(a => el("button", { class: "btn" + (a.primary ? " primary" : ""), onclick: (e)=>{ e.preventDefault(); a.onClick && a.onClick(); } }, a.label));
-  const node = el("div", {}, [
-    el("div", { class: "modalHeader" }, [
-      el("div", { class: "modalTitle" }, title),
-      el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
-    ]),
-    hr(),
-    bodyNode,
-    actions.length ? el("div", { class: "row gap", style: "justify-content:flex-end;margin-top:12px" }, btns) : null,
-  ]);
-  openModal(node);
-}
-// BooBly v1_3_1 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
+// BooBly v1_3_0 — master-driven Guided editor + Expert fallback, change tracking, scope editing.
 
 const state = {
   db: null,
@@ -103,8 +11,8 @@ const state = {
   importError: null,
   correctedJsonText: null,
 
-  page: "import", // import | edit | export | settings
-  lastPageBeforeSettings: "import",
+  page: "home", // home | create | edit | optimize | settings
+  lastPageBeforeSettings: "home",
 
   // Edit UX (master-driven)
   editMode: "guided", // guided | expert
@@ -132,26 +40,7 @@ const state = {
   optimizeTab: "portrait", // portrait | fashion | fitness
   createJsonExpanded: false,
   currentPresetId: null,
-
-  // Export customization (model wrappers)
-  exportPrefix: "",
-  exportSuffix: "",
 };
-
-// Guided policy enforcement: optionally exclude freeform controls at runtime.
-function isGuidedField(master, f) {
-  if (!f) return false;
-  const modes = (f.visibility?.modes || []);
-  if (!modes.includes("guided")) return false;
-  const policy = master?.ui?.guided_policy;
-  if (policy?.allow_freeform === false) {
-    const allowed = policy.guided_allowed_controls || [];
-    const kind = f.control?.kind;
-    return allowed.includes(kind);
-  }
-  return true;
-}
-
 
 const STORAGE = {
   theme: "boobly.theme",
@@ -167,7 +56,7 @@ const STORAGE = {
   master: "boobly.master",
 };
 
-const VERSION = "v1_4_1_Alpha";
+const VERSION = "v1_3_0";
 
 
 /* --------------------------
@@ -712,116 +601,33 @@ function header(title) {
   return el("div", { class: "header" }, [left, t, right]);
 }
 
-
-function stepper() {
-  const steps = [
-    { id: "import", label: "Import" },
-    { id: "edit", label: "Edit" },
-    { id: "export", label: "Export" },
-  ];
-
-  const canEdit = !!state.editableJson;
-  const canExport = !!state.editableJson;
-
-  const isEnabled = (id) => {
-    if (id === "import") return true;
-    if (id === "edit") return canEdit;
-    if (id === "export") return canExport;
-    return true;
-  };
-
-  const mk = (s, idx) => {
-    const enabled = isEnabled(s.id);
-    const cls = [
-      "step",
-      state.page === s.id ? "active" : "",
-      enabled ? "" : "disabled",
-      (state.page !== "import" && idx < steps.findIndex(x=>x.id===state.page)) ? "done" : ""
-    ].filter(Boolean).join(" ");
-
-    return el("button", {
-      class: cls,
-      type: "button",
-      "aria-current": state.page === s.id ? "step" : null,
-      "aria-disabled": enabled ? null : "true",
-      title: enabled ? s.label : "Complete previous step first",
-      onclick: () => {
-        if (!enabled) return toast("Complete the previous step first");
-        state.page = s.id; persistDraft(); rerender();
-      }
-    }, [
-      el("span", { class: "dot", "aria-hidden": "true" }, ""),
-      el("span", { class: "txt" }, s.label),
-    ]);
-  };
-
-  return el("div", { class: "stepper", role: "navigation", "aria-label": "Workflow" }, steps.map(mk));
-}
-
 function tabs() {
-  const canEdit = !!state.editableJson;
-  const canExport = !!state.editableJson;
-
-  const mk = (p, ico, lbl, enabled) =>
-    el("button",
+  const mk = (p, ico, lbl) =>
+    el(
+      "div",
       {
-        class: "tabBtn" + (state.page === p ? " active" : "") + (enabled ? "" : " disabled"),
-        type: "button",
-        "aria-label": lbl,
-        "aria-disabled": enabled ? null : "true",
+        class: "tab" + (state.page === p ? " active" : ""),
         onclick: () => {
-          if (!enabled) return toast("Complete the previous step first");
-          state.page = p; persistDraft(); rerender();
+          state.page = p;
+          persistDraft();
+          rerender();
         },
       },
-      [el("span", { class: "ico", "aria-hidden":"true" }, ico), el("span", { class: "lbl" }, lbl)]
+      [el("div", { class: "ico" }, ico), el("div", { class: "lbl" }, lbl)]
     );
 
-  return el("div", { class: "tabs", role: "navigation", "aria-label": "Primary" }, [
-    mk("import", "⬆️", "Import", true),
-    mk("edit", "✏️", "Edit", canEdit),
-    mk("export", "📤", "Export", canExport),
+  return el("div", { class: "tabs" }, [
+    el("div", { class: "tabRow" }, [
+      mk("home", "⌂", "Home"),
+      mk("create", "▦", "Create"),
+      mk("edit", "🗎", "Edit"),
+      mk("optimize", "⚡", "Optimize"),
+    ]),
   ]);
 }
 
-
 function card(title, bodyNodes) {
   return el("div", { class: "card" }, [el("div", { class: "cardBody" }, [el("div", { class: "cardTitle" }, title), ...bodyNodes])]);
-}
-
-function collapsibleCard(opts) {
-  const { id, title, subtitle, rightBadge, defaultOpen = true, bodyNodes = [] } = (opts || {});
-  state.collapsed = state.collapsed || {};
-  const isOpen = (state.collapsed[id] === undefined) ? defaultOpen : !state.collapsed[id];
-
-  const details = el("details", { class: "cCard" });
-  if (isOpen) details.setAttribute("open", "");
-
-  const sum = el("summary", { class: "cCardHead" }, [
-    el("div", { class: "cCardHeadMain" }, [
-      el("div", { class: "cCardTitle" }, title || ""),
-      subtitle ? el("div", { class: "cCardSub" }, subtitle) : null,
-    ].filter(Boolean)),
-    rightBadge ? el("div", { class: "cCardBadge" }, rightBadge) : null,
-  ].filter(Boolean));
-
-  details.appendChild(sum);
-  const body = el("div", { class: "cCardBody" }, bodyNodes);
-  details.appendChild(body);
-
-  details.addEventListener("toggle", () => {
-    state.collapsed[id] = !details.open;
-    persistDraft();
-  });
-
-  return details;
-}
-
-function toolbar(children=[]) { return el("div", { class: "toolbar" }, children); }
-function chip(text, kind="neutral") { return el("span", { class: "chip " + kind }, text); }
-function iconTextBtn(text, cls, onClick) {
-  const b = el("button", { class: cls || "btn", onclick: (e) => { e.preventDefault(); onClick && onClick(); } }, text);
-  return b;
 }
 function hr() { return el("div", { class: "hr" }); }
 
@@ -913,7 +719,6 @@ function openHelpModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Help — How to use BooBly"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     ol,
@@ -932,7 +737,6 @@ function openChangelogModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Changelog"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     el("div", { class: "small" }, list.length ? list : [el("div", { class:"small" }, "No changelog data.")]),
@@ -944,7 +748,7 @@ function openPresetPicker() {
   const grid = presets.length
     ? el("div", { class: "presetGrid" }, presets.map((p) => presetTile(p, () => {
         loadPreset(p);
-        state.page = "import";
+        state.page = "create";
         persistDraft();
         rerender();
         document.querySelector(".modalBack")?.remove();
@@ -955,7 +759,6 @@ function openPresetPicker() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Select Preset"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     grid,
   ]));
@@ -1000,7 +803,6 @@ function openPresetImagePicker(presetId) {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Set Preset Image"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     input,
@@ -1035,11 +837,8 @@ function openImportModal() {
         return;
       }
       state.parsedJson = parsed;
-      const canon = canonicalizeAny(parsed, state.master);
-      state.editableJson = canon;
-      state.lastValidationIssues = validateCanonical(canon, state.master);
-      state.rawJsonText = JSON.stringify(canon, null, 2);
-      state.originalJson = JSON.parse(JSON.stringify(canon));
+      state.editableJson = parsed;
+      state.rawJsonText = JSON.stringify(parsed, null, 2);
       persistDraft();
       toast("Imported");
       document.querySelector(".modalBack")?.remove();
@@ -1051,7 +850,6 @@ function openImportModal() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Import JSON"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     ta,
@@ -1180,77 +978,7 @@ function trKV(key, value, hasSwitch = false, switchOn = false, onToggle = null) 
   return el("tr", {}, [el("td", { class: "kvKey" }, key), valCell]);
 }
 
-function importPage() {
-
-const master = state.master;
-const validation = state.lastValidationIssues || [];
-const vErr = validation.filter(x=>x.level==="error").length;
-const vWarn = validation.filter(x=>x.level!=="error").length;
-const adapterLog = state.editableJson?.notes?.adapter_log || [];
-const reportCard = state.editableJson ? card("Import Report", [
-  el("div", { class: "small" }, `Adapter log: ${adapterLog.length} entry(s)`),
-  el("div", { class: "small" }, `Validation: ${vErr} error(s), ${vWarn} warning(s)`),
-  adapterLog.length ? el("details", {}, [
-    el("summary", { class: "small linkish" }, "Show adapter log"),
-    el("div", { class: "miniList" }, adapterLog.slice(0,10).map(a => el("div", { class: "miniRow" }, `${new Date(a.at||Date.now()).toLocaleString()} • ${a.adapter_id}`))),
-  ]) : el("div", { class: "small muted" }, "No adapter log yet."),
-  validation.length ? el("details", {}, [
-    el("summary", { class: "small linkish" }, "Show validation issues"),
-    el("div", { class: "miniList" }, validation.slice(0,30).map(it => el("div", { class: "miniRow" }, `${it.level.toUpperCase()} • ${it.path} — ${it.message}`))),
-  ]) : el("div", { class: "small muted" }, "No validation issues."),
-  el("div", { class: "row gap" }, [
-    el("button", { class: "btn primary", onclick: () => { state.page = "edit"; persistDraft(); rerender(); } }, "Go to Edit"),
-    el("button", { class: "btn", onclick: () => { state.page = "export"; persistDraft(); rerender(); } }, "Go to Export"),
-  ]),
-]) : null;
-
-const mergerCard = card("Preset Merger", [
-  el("div", { class: "small" }, "Merge two or more JSON files into one canonical output (later files override earlier values; characters are combined)."),
-  el("input", { type: "file", accept: ".json,application/json", class: "fileInput", multiple: "multiple", onchange: async (e) => {
-    const files = [...(e.target.files || [])];
-    state.mergeInputs = [];
-    for (const f of files) {
-      try {
-        const txt = await f.text();
-        const { parsed, error } = parseJsonLenient(txt);
-        if (error || !parsed) throw new Error(error || "Parse error");
-        const canon = canonicalizeAny(parsed, master);
-        state.mergeInputs.push({ name: f.name, canon });
-      } catch (err) {
-        state.mergeInputs.push({ name: f.name, error: String(err && (err.message || err)) });
-      }
-    }
-    rerender();
-  }}),
-  el("div", { class: "row gap" }, [
-    el("button", { class: "btn", onclick: () => {
-      const valids = state.mergeInputs.filter(x=>x.canon).map(x=>x.canon);
-      if (valids.length < 2) return toast("Select at least 2 valid JSON files");
-      const merged = mergeCanonicals(valids, master);
-      const issues = validateCanonical(merged, master);
-      state.mergeIssues = issues;
-      state.mergeResultText = JSON.stringify(merged, null, 2);
-      state.editableJson = merged;
-      state.rawJsonText = state.mergeResultText;
-      state.originalJson = JSON.parse(JSON.stringify(merged));
-      state.lastValidationIssues = issues;
-      persistDraft();
-      toast("Merged into canonical");
-      rerender();
-    } }, "Merge"),
-    el("button", { class: "btn", onclick: () => { state.mergeInputs = []; state.mergeResultText = ""; state.mergeIssues = null; rerender(); } }, "Clear"),
-  ]),
-  state.mergeInputs?.length ? el("details", {}, [
-    el("summary", { class: "small linkish" }, `Inputs (${state.mergeInputs.length})`),
-    el("div", { class: "miniList" }, state.mergeInputs.map(x => el("div", { class: "miniRow" }, x.error ? `✖ ${x.name}: ${x.error}` : `✓ ${x.name}`))),
-  ]) : el("div", { class: "small muted" }, "No merge inputs selected."),
-  state.mergeResultText ? el("details", {}, [
-    el("summary", { class: "small linkish" }, "Merged output preview"),
-    codeBlock(state.mergeResultText, () => { copyToClipboard(state.mergeResultText); toast("Copied"); }),
-    (state.mergeIssues && state.mergeIssues.length) ? el("div", { class: "small muted" }, `Merged validation: ${state.mergeIssues.filter(x=>x.level==="error").length} error(s), ${state.mergeIssues.length} total issues`) : null,
-  ]) : null,
-]);
-
+function createPage() {
   const presetsBtn = el("button", { class: "btn primary full", onclick: () => openPresetPicker() }, "Choose Preset");
   const importCodeBtn = el("button", { class: "btn soft", onclick: () => openImportModal() }, "{}  Import Code");
 
@@ -1272,11 +1000,8 @@ const mergerCard = card("Preset Merger", [
         return;
       }
       state.parsedJson = parsed;
-      const canon = canonicalizeAny(parsed, state.master);
-      state.editableJson = canon;
-      state.lastValidationIssues = validateCanonical(canon, state.master);
-      state.rawJsonText = JSON.stringify(canon, null, 2);
-      state.originalJson = JSON.parse(JSON.stringify(canon));
+      state.editableJson = parsed;
+      state.rawJsonText = JSON.stringify(parsed, null, 2);
       persistDraft();
       toast("Imported");
       rerender();
@@ -1285,7 +1010,14 @@ const mergerCard = card("Preset Merger", [
   const uploadBtn = el("button", { class: "btn soft", onclick: () => upload.click() }, "☁  Upload File");
 
   const topCards = el("div", { class: "stackCol" }, [
-    reportCard,
+    el("div", { class: "card" }, [
+      el("div", { class: "cardBody" }, [
+        el("div", { class: "small" }, "Select Preset"),
+        hr(),
+        el("div", { style: "font-weight:900;font-size:18px;margin-bottom:6px" }, "Choose from pre-made characters"),
+        presetsBtn,
+      ]),
+    ]),
     el("div", { class: "card" }, [
       el("div", { class: "cardBody" }, [
         el("div", { class: "small" }, "Import JSON"),
@@ -1295,22 +1027,6 @@ const mergerCard = card("Preset Merger", [
         upload,
       ]),
     ]),
-    el("div", { class: "card" }, [
-      el("div", { class: "cardBody" }, [
-        el("div", { class: "small" }, "Select Preset"),
-        hr(),
-        el("div", { style: "font-weight:900;font-size:18px;margin-bottom:6px" }, "Choose from pre-made characters"),
-        presetsBtn,
-      ]),
-    ]),
-    collapsibleCard({
-      id: "adv_merger",
-      title: "Advanced",
-      subtitle: "Merge multiple JSON files",
-      defaultOpen: false,
-      bodyNodes: [mergerCard],
-    }),
-
   ]);
 
   const view = currentSummaryFields();
@@ -1487,7 +1203,6 @@ function openAdvancedValueEditor(opts) {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, opts.title || "Advanced Editor"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     hint,
@@ -1568,188 +1283,115 @@ function genericKeyEditorCard() {
   }
 
   const inv = buildKeyInventory(state.editableJson);
-  const items = inv.map((x) => ({ ...x, category: categorizeKey(x) }));
+  const withCats = inv.map((x) => ({ ...x, category: categorizeKey(x) }));
 
-  // Filters
-  state.expert = state.expert || { q:"", cat:"", onlyChanged:false, onlyDb:false, onlyFreeform:false, onlyObjArr:false, selectedPath:"" };
-  const q = (state.expert.q || "").trim().toLowerCase();
+  const search = el("input", { type: "text", placeholder: "Search keys (path contains…)", value: state.keySearch || "" });
+  search.addEventListener("input", (e) => { state.keySearch = e.target.value; persistDraft(); rerender(); });
 
-  const filtered0 = q
-    ? items.filter((x) => x.path.toLowerCase().includes(q) || x.canonical.toLowerCase().includes(q))
-    : items;
+  const q = (state.keySearch || "").trim().toLowerCase();
+  const filtered = q ? withCats.filter((x) => x.path.toLowerCase().includes(q) || x.canonical.toLowerCase().includes(q)) : withCats;
 
-  const filtered = filtered0.filter((x) => {
-    const orig = getAtSegments(state.originalJson, x.segs);
-    const cur = getAtSegments(state.editableJson, x.segs);
-    const entry = dbEntryForPath(x.canonical);
-    const isChanged = JSON.stringify(orig) !== JSON.stringify(cur);
-    const isDb = !!(entry?.values && entry.values.length);
-    const isScalarLeaf = isScalar(cur);
-    const isFreeform = isScalarLeaf && !isDb;
-    const isObjArr = !isScalarLeaf || Array.isArray(cur) || (cur && typeof cur === "object");
-
-    if (state.expert.onlyChanged && !isChanged) return false;
-    if (state.expert.onlyDb && !isDb) return false;
-    if (state.expert.onlyFreeform && !isFreeform) return false;
-    if (state.expert.onlyObjArr && !isObjArr) return false;
-    return true;
-  });
-
-  // Group by category
+  // group by category
   const byCat = new Map();
-  for (const it of filtered) {
-    const c = it.category || "Uncategorized";
+  for (const item of filtered) {
+    const c = item.category || "Uncategorized";
     if (!byCat.has(c)) byCat.set(c, []);
-    byCat.get(c).push(it);
+    byCat.get(c).push(item);
   }
-  const cats = [...byCat.keys()].sort((a,b)=>a.localeCompare(b));
+  const cats = [...byCat.keys()].sort((a, b) => a.localeCompare(b));
 
-  if (!state.expert.cat || !byCat.has(state.expert.cat)) state.expert.cat = cats[0] || "Uncategorized";
-
-  const activeItems = (byCat.get(state.expert.cat) || []).slice().sort((a,b)=>a.path.localeCompare(b.path));
-
-  // Selection
-  if (!state.expert.selectedPath || !activeItems.find((x)=>x.path===state.expert.selectedPath)) {
-    state.expert.selectedPath = activeItems[0]?.path || "";
-  }
-  const selected = activeItems.find((x)=>x.path===state.expert.selectedPath) || null;
-
-  const search = el("input", { type:"text", placeholder:"Search keys…", value: state.expert.q || "" });
-  search.addEventListener("input", (e)=>{ state.expert.q = e.target.value; persistDraft(); rerender(); });
-
-  const chipToggle = (label, key) => {
-    const on = !!state.expert[key];
-    const b = el("button", { class: "chipBtn" + (on ? " on":""), onclick: (e)=>{ e.preventDefault(); state.expert[key]=!on; persistDraft(); rerender(); } }, label);
-    return b;
-  };
-
-  const catList = el("div", { class:"catList" }, cats.map((c)=>{
-    const count = (byCat.get(c)||[]).length;
-    const b = el("button", { class:"catBtn" + (state.expert.cat===c?" active":""), onclick:(e)=>{ e.preventDefault(); state.expert.cat=c; persistDraft(); rerender(); } }, [
-      el("span", { class:"catLbl" }, c),
-      el("span", { class:"catCount" }, String(count)),
-    ]);
-    return b;
-  }));
-
-  const keyList = el("div", { class:"keyList" }, activeItems.map((it)=>{
-    const orig = getAtSegments(state.originalJson, it.segs);
-    const cur = getAtSegments(state.editableJson, it.segs);
-    const changed = JSON.stringify(orig) !== JSON.stringify(cur);
-    const b = el("button", { class:"keyBtn" + (state.expert.selectedPath===it.path?" active":"") + (changed?" changed":""), onclick:(e)=>{ e.preventDefault(); state.expert.selectedPath=it.path; persistDraft(); rerender(); } }, [
-      el("div", { class:"keyBtnTitle" }, it.path),
-      el("div", { class:"keyBtnSub" }, it.canonical),
-    ]);
-    return b;
-  }));
-
-  const left = el("div", { class:"expertLeft" }, [
-    el("div", { class:"expertLeftHead" }, [
-      el("div", { class:"small", style:"font-weight:900" }, "Search"),
-      search,
-      el("div", { class:"chipRow" }, [
-        chipToggle("Changed","onlyChanged"),
-        chipToggle("DB","onlyDb"),
-        chipToggle("Freeform","onlyFreeform"),
-        chipToggle("Obj/Arr","onlyObjArr"),
-      ]),
-    ]),
-    el("div", { class:"expertLeftBody" }, [
-      el("div", { class:"small", style:"font-weight:900;margin-bottom:8px" }, "Categories"),
-      catList,
-      el("div", { class:"small", style:"font-weight:900;margin:12px 0 8px" }, "Keys"),
-      keyList,
-    ])
-  ]);
-
-  const inspector = (() => {
-    if (!selected) return el("div", { class:"expertRight" }, [
-      el("div", { class:"small" }, "No keys match the current filters.")
-    ]);
-
-    const orig = getAtSegments(state.originalJson, selected.segs);
-    const cur = getAtSegments(state.editableJson, selected.segs);
-    const entry = dbEntryForPath(selected.canonical);
+  const renderRow = (item) => {
+    const orig = getAtSegments(state.originalJson, item.segs);
+    const cur = getAtSegments(state.editableJson, item.segs);
+    const canon = item.canonical;
+    const entry = dbEntryForPath(canon);
     const values = Array.isArray(entry?.values) ? entry.values : [];
-    const scalar = isScalar(cur);
+    const isLeafScalar = isScalar(cur);
 
-    const header = el("div", { class:"inspHead" }, [
-      el("div", { class:"inspTitle" }, selected.path),
-      el("div", { class:"inspMeta" }, [
-        chip(selected.type, "neutral"),
-        chip(selected.canonical, "neutral"),
-        (JSON.stringify(orig)!==JSON.stringify(cur)) ? chip("Changed", "warn") : chip("Default", "ok"),
-      ]),
-      entry?.description ? el("div", { class:"small" }, entry.description) : null,
-    ].filter(Boolean));
+    const left = el("div", { style: "min-width:0" }, [
+      el("div", { style: "font-weight:900;word-break:break-word" }, item.path),
+      el("div", { class: "small" }, `${canon} • ${item.type}` + (entry?.description ? ` • ${entry.description}` : "")),
+    ]);
 
-    const reset = el("button", { class:"btn", onclick:(e)=>{ e.preventDefault(); setAtSegments(state.editableJson, selected.segs, orig); persistDraft(); rerender(); } }, "↩ Reset to Default");
-
-    const advanced = el("button", { class:"btn" }, "Advanced JSON…");
-    advanced.addEventListener("click", (e)=>{
-      e.preventDefault();
-      openAdvancedValueEditor({
-        title: `Edit: ${selected.path}`,
-        currentValue: cur,
-        onSave: (v)=>{ setAtSegments(state.editableJson, selected.segs, v); persistDraft(); rerender(); }
+    const right = (() => {
+      const advancedBtn = el("button", { class: "btn" }, "Advanced");
+      advancedBtn.addEventListener("click", (e) => {
+        e.preventDefault(); e.stopPropagation();
+        openAdvancedValueEditor({
+          title: `Edit: ${item.path}`,
+          currentValue: cur,
+          onSave: (v) => { setAtSegments(state.editableJson, item.segs, v); persistDraft(); },
+        });
       });
-    });
 
-    const editor = (() => {
-      if (!scalar) {
-        const preview = el("pre", { class:"jsonPreview" }, JSON.stringify(cur, null, 2));
-        return el("div", { class:"stack" }, [preview, el("div", { class:"row" }, [reset, advanced])]);
+      if (!isLeafScalar) {
+        const preview = el("div", { class: "small", style: "max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" }, JSON.stringify(cur));
+        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px" }, [preview, advancedBtn]);
       }
 
       if (!values.length) {
-        const i = el("input", { type:"text", value: (cur ?? "") === null ? "" : String(cur ?? "") });
-        i.addEventListener("input", (e)=>{ setAtSegments(state.editableJson, selected.segs, e.target.value); persistDraft(); });
-        return el("div", { class:"stack" }, [
-          el("div", { class:"small" }, "Freeform value"),
-          i,
-          el("div", { class:"row" }, [reset, advanced]),
-        ]);
+        // freeform input + default + advanced
+        const i = el("input", { type: "text", value: (cur ?? "") === "" ? "" : String(cur) });
+        i.addEventListener("input", (e) => { setAtSegments(state.editableJson, item.segs, e.target.value); persistDraft(); });
+        const defBtn = el("button", { class: "btn" }, "Default");
+        defBtn.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); setAtSegments(state.editableJson, item.segs, orig); persistDraft(); rerender(); });
+        return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [i, defBtn, advancedBtn]);
       }
 
       const s = el("select", {});
+      // Default option always first
       const defaultLabel = `Default (keep: ${isScalar(orig) ? String(orig) : valueType(orig)})`;
-      s.appendChild(el("option", { value:"__DEFAULT__" }, defaultLabel));
-      for (const o of values) s.appendChild(el("option", { value:o }, o));
-      const sameAsOrig = JSON.stringify(cur) === JSON.stringify(orig);
+      s.appendChild(el("option", { value: "__DEFAULT__" }, defaultLabel));
+      for (const o of values) s.appendChild(el("option", { value: o }, o));
+
+      // Set selection
+      const sameAsOrig = (JSON.stringify(cur) === JSON.stringify(orig));
       s.value = sameAsOrig ? "__DEFAULT__" : (values.includes(cur) ? cur : "__DEFAULT__");
-      s.addEventListener("change", (e)=>{
+
+      s.addEventListener("change", (e) => {
         const v = e.target.value;
-        if (v==="__DEFAULT__") setAtSegments(state.editableJson, selected.segs, orig);
-        else setAtSegments(state.editableJson, selected.segs, v);
+        if (v === "__DEFAULT__") setAtSegments(state.editableJson, item.segs, orig);
+        else setAtSegments(state.editableJson, item.segs, v);
         persistDraft();
         rerender();
       });
-      return el("div", { class:"stack" }, [
-        el("div", { class:"small" }, "DB-supported values"),
-        s,
-        el("div", { class:"row" }, [reset, advanced]),
-      ]);
+
+      return el("div", { class: "row", style: "justify-content:flex-end;gap:8px;flex-wrap:wrap" }, [s, advancedBtn]);
     })();
 
-    return el("div", { class:"expertRight" }, [
-      header,
-      hr(),
-      editor,
+    return el("div", { class: "settingsRow", style: "align-items:flex-start" }, [
+      left,
+      el("div", { style: "flex:0 0 auto" }, right),
     ]);
-  })();
+  };
 
-  const workbench = el("div", { class:"expertWorkbench" }, [left, inspector]);
+  const catNodes = cats.map((c) => {
+    const items = byCat.get(c) || [];
+    const key = "cat:" + c;
+    const open = !!state.keyEditorExpanded?.[key];
+    const headerBtn = el("button", { class: "btn", style: "width:100%;justify-content:space-between" }, [
+      el("span", {}, `${c} (${items.length})`),
+      el("span", { class: "small" }, open ? "Hide" : "Show"),
+    ]);
+    headerBtn.addEventListener("click", () => {
+      state.keyEditorExpanded = state.keyEditorExpanded || {};
+      state.keyEditorExpanded[key] = !state.keyEditorExpanded[key];
+      persistDraft();
+      rerender();
+    });
 
-  return el("div", { class:"card" }, [
-    el("div", { class:"cardBody" }, [
-      el("div", { class:"cardTitle" }, "Expert Mode"),
-      el("div", { class:"small" }, "Fallback editor for any JSON. Search, filter, inspect, and edit one key at a time."),
-      hr(),
-      workbench,
-    ])
+    const body = open ? el("div", { style: "margin-top:10px" }, items.map(renderRow)) : null;
+    return el("div", { style: "margin-bottom:12px" }, [headerBtn, body].filter(Boolean));
+  });
+
+  return card("Key Editor (Any JSON)", [
+    el("div", { class: "small" }, "Browse and edit imported JSON keys directly. Use Default to keep the original value. Advanced supports objects/arrays now."),
+    hr(),
+    search,
+    hr(),
+    ...catNodes,
   ]);
 }
-
 
 function editPage() {
   if (!state.editableJson) {
@@ -1762,13 +1404,51 @@ function editPage() {
   const hasCanonical = !!(state.editableJson && (state.editableJson.characters || state.editableJson.scene || state.editableJson.schema_version));
 
   const convertToCanonical = () => {
-    const out = canonicalizeAny(state.editableJson || {}, master);
+    const j = state.editableJson || {};
+    // Minimal legacy → canonical conversion (non-destructive: stores source in notes.unmapped)
+    const out = {
+      schema_version: master?.meta?.canonical_version || "1.3.0",
+      scene: {},
+      characters: [],
+      style: {},
+      technical: {},
+      notes: { unmapped: {}, source_text: "", adapter_log: [] },
+    };
+    out.notes.unmapped._source = JSON.parse(JSON.stringify(j));
+    const c0 = { id: (crypto?.randomUUID ? crypto.randomUUID() : String(Date.now())), name: "Character 1" };
+
+    // common legacy paths in existing presets
+    const legacyName = getByPath(j, ["subject","identity","name"], "");
+    if (legacyName) c0.name = legacyName;
+    const hairColor = getByPath(j, ["subject","hair","color"], "");
+    if (hairColor) c0.hair = { ...(c0.hair||{}), color: hairColor };
+    const hairStyle = getByPath(j, ["subject","hair","style"], "");
+    if (hairStyle) c0.hair = { ...(c0.hair||{}), style: hairStyle };
+    const eyeColor = getByPath(j, ["subject","eyes","color"], "");
+    if (eyeColor) c0.face = { ...(c0.face||{}), eyes: { ...(c0.face?.eyes||{}), color: eyeColor } };
+    const freckles = getByPath(j, ["subject","skin","freckles"], "");
+    if (freckles) c0.face = { ...(c0.face||{}), freckles: !/^none/i.test(String(freckles)) };
+    const makeup = getByPath(j, ["subject","eyes","makeup"], "");
+    if (makeup) c0.face = { ...(c0.face||{}), makeup: { style: String(makeup) } };
+    const height = getByPath(j, ["subject","identity","height_cm"], null);
+    if (typeof height === "number") c0.body = { ...(c0.body||{}), height_cm: height };
+    const outfit = getByPath(j, ["clothing","outfit_type"], "") || getByPath(j, ["clothing"], "");
+    if (outfit) c0.outfit = { description: String(outfit) };
+
+    // scene-ish legacy
+    const env = getByPath(j, ["image_metadata","environment","location"], "");
+    if (env) out.scene.location = env;
+    const light = getByPath(j, ["image_metadata","lighting","type"], "");
+    if (light) out.scene.lighting = { style: String(light) };
+    const framing = getByPath(j, ["composition","framing"], "");
+    if (framing) out.scene.camera = { ...(out.scene.camera||{}), shot: String(framing) };
+
+    out.characters.push(c0);
     state.editableJson = out;
-    state.lastValidationIssues = validateCanonical(out, master);
     state.rawJsonText = JSON.stringify(out, null, 2);
     state.originalJson = JSON.parse(JSON.stringify(out));
     persistDraft();
-    toast(`Converted to Canonical v${out.schema_version || master?.meta?.canonical_version || ""}`);
+    toast("Converted to Canonical v1.3.0");
     rerender();
   };
 
@@ -1821,7 +1501,6 @@ function editPage() {
       el("div", { class: "modalHeader" }, [
         el("div", { class: "modalTitle" }, `Review Changes (${changedFields.length})`),
         el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
       ]),
       hr(),
       ...rows,
@@ -1902,56 +1581,6 @@ function editPage() {
     }
     setByMasterPath(state.editableJson, field.path, value, activeIdx);
   }
-  function randomizeGuided() {
-    if (!master?.fields) return toast("No master fields");
-    const guidedFields = master.fields.filter((f) => (f.visibility?.modes || []).includes("guided"));
-    let n = 0;
-
-    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-    for (const f of guidedFields) {
-      const c = f.control || {};
-      // Only randomize structured controls (avoid freeform text in Guided).
-      if (c.kind === "select") {
-        const src = c.source || "";
-        const opts = (typeof src === "string" && src.startsWith("vocab."))
-          ? (master?.vocab?.[src.slice(6)] || [])
-          : [];
-        if (!opts.length) continue;
-        const val = pick(opts);
-        if (f.scope === "character") applyCharacterValue(f, val);
-        else setByMasterPath(state.editableJson, f.path, val, 0);
-        n++;
-        continue;
-      }
-      if (c.kind === "segmented") {
-        // yes/no segmented → boolean random
-        const v = Math.random() < 0.5 ? false : true;
-        if (f.scope === "character") applyCharacterValue(f, v);
-        else setByMasterPath(state.editableJson, f.path, v, 0);
-        n++;
-        continue;
-      }
-      if (c.kind === "slider" || c.kind === "stepper") {
-        const min = Number(c.min ?? 0);
-        const max = Number(c.max ?? 100);
-        const step = Number(c.step ?? 1);
-        const span = Math.max(0, Math.floor((max - min) / step));
-        const val = min + (Math.floor(Math.random() * (span + 1)) * step);
-        if (f.scope === "character") applyCharacterValue(f, val);
-        else setByMasterPath(state.editableJson, f.path, val, 0);
-        n++;
-        continue;
-      }
-      // list_editor / input / textarea / json_viewer: skip
-    }
-
-    if (!n) return toast("Nothing to randomize");
-    persistDraft();
-    toast(`Randomized ${n} field${n === 1 ? "" : "s"}`);
-    rerender();
-  }
-
 
   function fieldRow(field) {
     const idx = (field.scope === "character") ? activeIdx : 0;
@@ -1959,7 +1588,9 @@ function editPage() {
     const orig = getByMasterPath(state.originalJson, field.path, idx, "");
     const isDefault = deepEqual(cur, orig);
 
-    const chipNode = chip(isDefault ? `Default (keep: ${String(orig ?? "—")})` : `Overridden (${String(cur ?? "—")})`, isDefault ? "ok" : "warn");
+    const chip = el("span", { class:"small", style:`padding:4px 8px;border-radius:999px;${isDefault?"opacity:.8":"font-weight:900"}` },
+      isDefault ? `Default (keep: ${String(orig ?? "—")})` : `Overridden (${String(cur ?? "—")})`
+    );
 
     const resetBtn = el("button", { class:"btn" }, "↩ Reset");
     resetBtn.addEventListener("click", (e) => {
@@ -2000,48 +1631,19 @@ function editPage() {
         const opts = (typeof src === "string" && src.startsWith("vocab."))
           ? (master?.vocab?.[src.slice(6)] || [])
           : [];
-        const makeSelectEl = () => {
-          const s = el("select", {});
-          s.appendChild(el("option", { value: "__DEFAULT__" }, `Default (keep: ${String(orig ?? "—")})`));
-          for (const o of opts) s.appendChild(el("option", { value: String(o) }, String(o)));
-          s.value = isDefault ? "__DEFAULT__" : String(cur);
-          s.addEventListener("change", (e) => {
-            const v = e.target.value;
-            const val = (v === "__DEFAULT__") ? orig : v;
-            if (field.scope === "character") applyCharacterValue(field, val);
-            else setByMasterPath(state.editableJson, field.path, val, 0);
-            persistDraft();
-            rerender();
-          });
-          return s;
-        };
-
-        // iOS-minimal Guided UX: show as a tap-to-pick cell, with a dropdown in a modal sheet.
-        if (state.editMode === "guided") {
-          const preview = isDefault ? `Default (keep: ${String(orig ?? "—")})` : String(cur ?? "—");
-          const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
-            e.preventDefault();
-            const s = makeSelectEl();
-            openModal(el("div", {}, [
-              el("div", { class: "modalHeader" }, [
-                el("div", { class: "modalTitle" }, field.label),
-                el("button", { class: "btn", onclick: () => closeTopModal() }, "Done"),
-              ]),
-              el("div", { class: "modalBody" }, [
-                el("div", { class: "small" }, field.help_text || ""),
-                s,
-              ].filter(Boolean)),
-            ]));
-          } }, [
-            el("div", { class: "iosCellMain" }, [
-              el("div", { class: "iosCellValue" }, preview),
-            ]),
-            el("div", { class: "iosChevron" }, "›"),
-          ]);
-          return btn;
-        }
-
-        return makeSelectEl();
+        const s = el("select", {});
+        s.appendChild(el("option", { value: "__DEFAULT__" }, `Default (keep: ${String(orig ?? "—")})`));
+        for (const o of opts) s.appendChild(el("option", { value: String(o) }, String(o)));
+        s.value = isDefault ? "__DEFAULT__" : String(cur);
+        s.addEventListener("change", (e) => {
+          const v = e.target.value;
+          const val = (v === "__DEFAULT__") ? orig : v;
+          if (field.scope === "character") applyCharacterValue(field, val);
+          else setByMasterPath(state.editableJson, field.path, val, 0);
+          persistDraft();
+          rerender();
+        });
+        return s;
       }
 
       if (c.kind === "slider") {
@@ -2069,37 +1671,9 @@ function editPage() {
         });
         return i;
       }
-      if (c.kind === "textarea") {
-        const currentText = String(cur ?? orig ?? "");
-        if (state.editMode === "guided") {
-          const trimmed = currentText.trim();
-          const preview = trimmed ? trimmed.slice(0, 42) + (trimmed.length > 42 ? "…" : "") : (c.placeholder || "Tap to edit");
-          const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
-            e.preventDefault();
-            const ta = el("textarea", { rows: c.rows || 8, placeholder: c.placeholder || "" }, currentText);
-            ta.addEventListener("input", (ev) => {
-              const v = ev.target.value;
-              if (field.scope === "character") applyCharacterValue(field, v);
-              else setByMasterPath(state.editableJson, field.path, v, 0);
-              persistDraft();
-            });
-            openModal(el("div", {}, [
-              el("div", { class: "modalHeader" }, [
-                el("div", { class: "modalTitle" }, field.label),
-                el("button", { class: "btn", onclick: () => document.querySelector('.modalBack')?.remove() }, "Done"),
-              ]),
-              el("div", { class: "modalBody" }, [ta]),
-            ]));
-          } }, [
-            el("div", { class: "iosCellMain" }, [
-              el("div", { class: "iosCellValue" }, preview),
-            ]),
-            el("div", { class: "iosChevron" }, "›"),
-          ]);
-          return btn;
-        }
 
-        const t = el("textarea", { rows: c.rows || 3 }, currentText);
+      if (c.kind === "textarea") {
+        const t = el("textarea", { rows: c.rows || 3 }, String(cur ?? orig ?? ""));
         t.addEventListener("input", (e) => {
           const v = e.target.value;
           if (field.scope === "character") applyCharacterValue(field, v);
@@ -2108,7 +1682,6 @@ function editPage() {
         });
         return t;
       }
-
 
       if (c.kind === "list_editor") {
         const arr = Array.isArray(cur) ? cur : (Array.isArray(orig) ? orig : []);
@@ -2147,36 +1720,9 @@ function editPage() {
         });
         return el("div", {}, [list, add]);
       }
-      // default: input
-      const currentVal = String(cur ?? orig ?? "");
-      if (state.editMode === "guided") {
-        const preview = currentVal.trim() ? currentVal.trim() : (c.placeholder || "Tap to edit");
-        const btn = el("button", { class: "iosCellBtn", onclick: (e) => {
-          e.preventDefault();
-          const inp = el("input", { type: "text", placeholder: c.placeholder || "", value: currentVal });
-          inp.addEventListener("input", (ev) => {
-            const v = ev.target.value;
-            if (field.scope === "character") applyCharacterValue(field, v);
-            else setByMasterPath(state.editableJson, field.path, v, 0);
-            persistDraft();
-          });
-          openModal(el("div", {}, [
-            el("div", { class: "modalHeader" }, [
-              el("div", { class: "modalTitle" }, field.label),
-              el("button", { class: "btn", onclick: () => document.querySelector('.modalBack')?.remove() }, "Done"),
-            ]),
-            el("div", { class: "modalBody" }, [inp]),
-          ]));
-        } }, [
-          el("div", { class: "iosCellMain" }, [
-            el("div", { class: "iosCellValue" }, preview),
-          ]),
-          el("div", { class: "iosChevron" }, "›"),
-        ]);
-        return btn;
-      }
 
-      const i = el("input", { type:"text", placeholder: c.placeholder || "", value: currentVal });
+      // default: input
+      const i = el("input", { type:"text", placeholder: c.placeholder || "", value: String(cur ?? orig ?? "") });
       i.addEventListener("input", (e) => {
         const v = e.target.value;
         if (field.scope === "character") applyCharacterValue(field, v);
@@ -2186,16 +1732,14 @@ function editPage() {
       return i;
     })();
 
-    return el("div", { class:"fieldRow" }, [
-      el("div", { class:"fieldLeft" }, [
-        el("div", { class:"fieldLabel" }, field.label),
-        field.help_text ? el("div", { class:"small fieldHelp" }, field.help_text) : null,
-      ].filter(Boolean)),
-      el("div", { class:"fieldRight" }, [
-        el("div", { class:"fieldActions" }, [chipNode, resetBtn]),
-        control,
+    return el("div", { style:"margin-bottom:12px" }, [
+      el("div", { style:"display:flex;justify-content:space-between;gap:10px;align-items:center" }, [
+        el("div", { style:"font-weight:900" }, field.label),
+        el("div", { style:"display:flex;gap:8px;align-items:center" }, [chip, resetBtn]),
       ]),
-    ]);
+      el("div", { style:"margin-top:8px" }, control),
+      field.help_text ? el("div", { class:"small", style:"margin-top:6px;opacity:.85" }, field.help_text) : null,
+    ].filter(Boolean));
   }
 
   const guidedContent = (() => {
@@ -2208,60 +1752,43 @@ function editPage() {
       return card("Guided Editor", [
         el("div", { class:"small" }, "This JSON is not in canonical format. Convert to Canonical to use Guided mode, or use Expert mode."),
         hr(),
-        el("button", { class:"btn primary", onclick: convertToCanonical }, "Convert → Canonical"),
+        el("button", { class:"btn primary", onclick: convertToCanonical }, "Convert → Canonical (v1.3.0)"),
       ]);
     }
 
     const guidedFields = master.fields
       .filter((f) => (f.visibility?.modes || []).includes("guided"))
-      .slice()
       .sort((a,b) => (a.category||"").localeCompare(b.category||"") || (a.order||0)-(b.order||0));
 
-    // category order from master.categories, fallback alphabetical
-    const catOrder = new Map();
-    (master.categories || []).forEach((c, i) => catOrder.set(c.id, c.order ?? (i*10)));
-
+    // group by category
     const byCat = new Map();
     for (const f of guidedFields) {
       const c = f.category || "Advanced";
       if (!byCat.has(c)) byCat.set(c, []);
       byCat.get(c).push(f);
     }
+    const catOrder = (master.categories || []).slice().sort((a,b)=> (a.order||0)-(b.order||0)).map(x=>x.id);
+    const cats = [...byCat.keys()].sort((a,b)=> (catOrder.indexOf(a)===-1?999:catOrder.indexOf(a)) - (catOrder.indexOf(b)===-1?999:catOrder.indexOf(b)));
 
-    const cats = [...byCat.keys()].sort((a,b) => (catOrder.get(a) ?? 9999) - (catOrder.get(b) ?? 9999) || a.localeCompare(b));
-
-    const sections = cats.map((c, idx) => {
-      const fs = (byCat.get(c) || []).slice().sort((a,b) => (a.order||0)-(b.order||0));
-      const changedInCat = changedFields.filter((x) => (x.field?.category || "Advanced") === c);
-      const badge = changedInCat.length ? `Changed ${changedInCat.length}` : `${fs.length}`;
-      // SiliconTitsUI 2.0: start collapsed to avoid overwhelming users.
-      // Auto-open only when the category contains edits.
-      const defaultOpen = !!changedInCat.length;
-
-      return collapsibleCard({
-        id: "guided:" + c,
-        title: c,
-        subtitle: changedInCat.length ? "Contains edits" : null,
-        rightBadge: badge,
-        defaultOpen,
-        bodyNodes: fs.map(fieldRow),
-      });
+    const cards = cats.map((c) => {
+      const list = byCat.get(c) || [];
+      return card(c, list.map(fieldRow));
     });
+    return el("div", {}, cards);
+  })();
 
-    return el("div", { class: "guidedStack" }, sections);
-  })();;
-
-  const topBar = el("div", { class:"editTop" }, [
-    toolbar([
-      el("div", { class:"toolGroup" }, [modeSeg]),
+  const topBar = card("Editor", [
+    el("div", { class:"row", style:"justify-content:space-between;align-items:center;flex-wrap:wrap" }, [
+      modeSeg,
       scopeSelector,
       applyScopeSelector,
-      el("div", { style:"flex:1" }, ""),
-      iconTextBtn("Randomize", "btn", randomizeGuided),
-      chip(`Changed: ${changedFields.length}`, changedFields.length ? "warn" : "ok"),
-      iconTextBtn("Review", "btn", openReviewChanges),
-      iconTextBtn("Export", "btn primary", () => { state.page = "export"; persistDraft(); rerender(); }),
+      el("button", { class:"btn", onclick: openReviewChanges }, `Review (${changedFields.length})`),
     ].filter(Boolean)),
+    hr(),
+    el("div", { class:"row" }, [
+      el("button", { class:"btn", onclick: async () => { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); } }, "Copy JSON"),
+      el("button", { class:"btn primary", onclick: () => downloadJson("boobly-edited.json", state.editableJson) }, "Download JSON"),
+    ]),
   ]);
 
   const body = (state.editMode === "expert")
@@ -2293,7 +1820,7 @@ function buildOptimizerOutput() {
   return blocks.filter(Boolean).join("\n\n---\n\n");
 }
 
-function exportPage() {
+function optimizePage() {
   const models = state.prompts?.prompts?.model_specific || [];
 
   const modelSel = el("select", { onchange: (e) => { state.selectedModelPromptId = e.target.value; persistDraft(); rerender(); } });
@@ -2307,9 +1834,6 @@ function exportPage() {
   ]);
 
   const output = buildOptimizerOutput();
-  const wrappedOutput = `${state.exportPrefix || ""}${output}${state.exportSuffix || ""}`;
-
-  const jsonOut = state.editableJson ? JSON.stringify(state.editableJson, null, 2) : "{\n}\n";
 
   const toggles = el("div", { class: "row" }, [
     el("div", {}, [el("div", { class: "small" }, "Master"), switchPill(state.addMasterPrompt, () => { state.addMasterPrompt = !state.addMasterPrompt; persistDraft(); rerender(); })]),
@@ -2318,25 +1842,7 @@ function exportPage() {
     el("div", {}, [el("div", { class: "small" }, "JSON"), switchPill(state.addJsonOutput, () => { state.addJsonOutput = !state.addJsonOutput; persistDraft(); rerender(); })]),
   ]);
 
-  const copyBtn = el("button", { class: "btn primary", onclick: async () => {
-    try { await copyToClipboard(wrappedOutput); toast("Copied output"); }
-    catch { toast("Copy blocked"); }
-  } }, "Copy Output");
-
-  const copyJsonBtn = el("button", { class: "btn", onclick: async () => {
-    try { await copyToClipboard(jsonOut); toast("Copied JSON"); }
-    catch { toast("Copy blocked"); }
-  } }, "Copy JSON");
-
-  const dlJsonBtn = el("button", { class: "btn", onclick: () => {
-    if (!state.editableJson) { toast("Nothing to export"); return; }
-    downloadJson("boobly-export.json", state.editableJson);
-  } }, "Download JSON");
-
-  const prefix = el("textarea", { rows: 2, placeholder: "Prefix (optional) — text inserted before output" }, state.exportPrefix || "");
-  prefix.addEventListener("input", (e) => { state.exportPrefix = e.target.value; persistDraft(); rerender(); });
-  const suffix = el("textarea", { rows: 2, placeholder: "Suffix (optional) — text inserted after output" }, state.exportSuffix || "");
-  suffix.addEventListener("input", (e) => { state.exportSuffix = e.target.value; persistDraft(); rerender(); });
+  const copyBtn = el("button", { class: "btn primary", onclick: async () => { await copyToClipboard(output); toast("Copied output"); } }, "Copy Output");
 
   return el("div", { class: "screen" }, [
     card("Model Optimizer", [
@@ -2348,13 +1854,9 @@ function exportPage() {
       el("div", { class: "small", style: "font-weight:900" }, "Merge Options"),
       toggles,
       hr(),
-      el("div", { class: "btnRowTop" }, [copyBtn, copyJsonBtn, dlJsonBtn]),
+      copyBtn,
       hr(),
-      el("div", { class: "small", style: "font-weight:900" }, "Model Wrappers"),
-      el("div", { class: "small" }, "Use these when a model requires a prefix/suffix wrapper around the compiled output."),
-      el("div", { class: "stack" }, [prefix, suffix]),
-      hr(),
-      el("textarea", { readonly: true }, wrappedOutput),
+      el("textarea", { readonly: true }, output),
     ]),
     card("Prompt Optimization", [
       seg,
@@ -2395,7 +1897,6 @@ function openPresetsManager() {
     el("div", { class: "modalHeader" }, [
       el("div", { class: "modalTitle" }, "Presets (long-press image)"),
       el("button", { class: "btn", onclick: () => closeTopModal() }, "Close"),
-        el("button", { class: "btn primary", onclick: () => { closeTopModal(); state.page = "export"; persistDraft(); rerender(); } }, "Continue to Export"),
     ]),
     hr(),
     el("div", { class: "small" }, "Long-press a preset tile to set its image."),
@@ -2405,71 +1906,9 @@ function openPresetsManager() {
 }
 
 function settingsPage() {
-
-// Master Manager state summary
-const masterInfo = state.master?.meta || {};
-const issues = state.masterValidation || [];
-const hasErr = issues.some(x=>x.level==="error");
-const masterSummary = issues.length ? `${hasErr ? "Errors" : "Warnings"}: ${issues.filter(x=>x.level==="error").length} / ${issues.length}` : "No issues";
-const masterManagerCard = card("Master Manager", [
-  el("div", { class: "small" }, `Active master: ${masterInfo.master_version || "?"} • Canonical: ${masterInfo.canonical_version || "?"}`),
-  el("div", { class: "small muted" }, masterSummary),
-  el("div", { class: "row gap" }, [
-    el("button", { class: "btn", onclick: () => { state.masterValidation = validateMaster(state.master); toast("Validated active master"); rerender(); } }, "Validate Active"),
-    el("button", { class: "btn", onclick: () => { try { localStorage.removeItem(STORAGE.master); } catch {} state.master = JSON.parse(JSON.stringify(state.bundledMaster)); state.masterValidation = validateMaster(state.master); toast("Reset to bundled"); rerender(); } }, "Reset Bundled"),
-  ]),
-  el("div", { class: "small" }, "Upload a master JSON to preview diff and activate locally."),
-  el("input", { type: "file", accept: ".json,application/json", class: "fileInput", onchange: async (e) => {
-    const f = e.target.files && e.target.files[0]; if (!f) return;
-    const txt = await f.text(); state.pendingMasterText = txt;
-    try {
-      state.pendingMaster = JSON.parse(txt);
-      state.masterDiffText = diffText(JSON.stringify(state.master, null, 2), JSON.stringify(state.pendingMaster, null, 2));
-      state.masterValidation = validateMaster(state.pendingMaster);
-      toast("Master loaded");
-    } catch (err) {
-      state.pendingMaster = null;
-      state.masterDiffText = "";
-      state.masterValidation = [{ level: "error", path: "$", message: String(err && (err.message || err)) }];
-      toast("Invalid master");
-    }
-    rerender();
-  }}),
-  state.pendingMaster ? el("div", { class: "row gap" }, [
-    el("button", { class: "btn", onclick: () => modalView("Master Diff", el("pre", { class: "diffBox" }, state.masterDiffText || "(no differences)")) }, "View Diff"),
-    el("button", { class: "btn primary", onclick: () => {
-      const iss = state.masterValidation || [];
-      if (iss.some(x=>x.level==="error")) return toast("Fix master errors first");
-      saveLS(STORAGE.master, state.pendingMaster);
-      state.master = state.pendingMaster;
-      state.masterValidation = validateMaster(state.master);
-      toast("Master activated");
-      rerender();
-    } }, "Activate"),
-  ]) : el("div", { class: "small muted" }, "No uploaded master loaded."),
-  (state.masterValidation && state.masterValidation.length) ? el("details", {}, [
-    el("summary", { class: "small linkish" }, "Show master validation"),
-    el("div", { class: "miniList" }, (state.masterValidation||[]).slice(0,80).map(it => el("div", { class: "miniRow" }, `${it.level.toUpperCase()} • ${it.path} — ${it.message}`))),
-  ]) : null,
-]);
-
-const qaCard = card("Mobile QA Matrix", [
-  el("div", { class: "small" }, "Quick sanity checks (run on iPhone/Android + desktop widths):"),
-  el("div", { class: "miniList" }, [
-    "Import: paste/upload, preset picker, merger",
-    "Edit Guided: collapsible cards, pickers, randomizer",
-    "Edit Expert: search, inspector, object/array modal",
-    "Review Changes → Export flow",
-    "Console dock: fixed height, scroll",
-    "Multi-character scope selector",
-    "Performance: large JSON responsiveness",
-  ].map(t => el("div", { class: "miniRow" }, `• ${t}`))),
-]);
-
   const wpInput = el("input", {
     type: "file",
     accept: "image/*",
-    style: "display:none",
     onchange: async (e) => {
       const f = e.target.files?.[0];
       if (!f) return;
@@ -2478,7 +1917,6 @@ const qaCard = card("Mobile QA Matrix", [
       rerender();
     },
   });
-  const wpBtn = el("button", { class: "btn", onclick: () => wpInput.click() }, "Choose Wallpaper");
   const clearWp = el("button", { class: "btn", onclick: async () => { await setWallpaper(null); toast("Wallpaper cleared"); rerender(); } }, "Clear Wallpaper");
 
   const exportDb = el("button", { class: "btn primary", onclick: () => downloadJson("boobly-database.json", state.db) }, "Export Database");
@@ -2572,7 +2010,7 @@ const qaCard = card("Mobile QA Matrix", [
       el("div", { class: "row" }, [importPrompts, exportPrompts]),
       el("div", { class: "row" }, [importAll, exportAll]),
       hr(),
-      el("div", { class: "fileRow" }, [wpBtn, clearWp, wpInput]),
+      el("div", { class: "row" }, [wpInput, clearWp]),
       hr(),
       el("div", { class: "small", style: "font-weight:900" }, "LLM Integration"),
       llmUrl,
@@ -2588,16 +2026,18 @@ const qaCard = card("Mobile QA Matrix", [
    Render
 --------------------------- */
 function pageTitle() {
-  if (state.page === "import") return "Import";
+  if (state.page === "home") return "Home";
+  if (state.page === "create") return "Create";
   if (state.page === "edit") return "Edit";
-  if (state.page === "export") return "Export";
+  if (state.page === "optimize") return "Optimize";
   return "Settings";
 }
 
 function route() {
-  if (state.page === "import") return importPage();
+  if (state.page === "home") return homePage();
+  if (state.page === "create") return createPage();
   if (state.page === "edit") return editPage();
-  if (state.page === "export") return exportPage();
+  if (state.page === "optimize") return optimizePage();
   return settingsPage();
 }
 
@@ -2606,7 +2046,6 @@ function rerender() {
   root.innerHTML = "";
   const overlay = el("div", { class: "wallpaperOverlay" }, []);
   overlay.appendChild(header(pageTitle()));
-  overlay.appendChild(stepper());
   let pageNode;
   try {
     pageNode = route();
@@ -2646,9 +2085,8 @@ async function init() {
 
   // Master file (Option A) — drives Guided/Expert editor.
   const mLS = loadLS(STORAGE.master, null);
-  state.master = mLS || (await fetchJson("master_file_v1_4_0_Alpha.json").catch(() => null));
+  state.master = mLS || (await fetchJson("master_file_v1_3_0.json").catch(() => null));
   if (state.master) saveLS(STORAGE.master, state.master);
-  state.bundledMaster = JSON.parse(JSON.stringify(state.master));
 
   const clLS = loadLS(STORAGE.changelog, null);
   state.changelog = clLS || (await fetchJson("changelog.json").catch(() => DEFAULT_CHANGELOG));
