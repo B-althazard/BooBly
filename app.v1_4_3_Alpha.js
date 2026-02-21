@@ -167,7 +167,7 @@ const STORAGE = {
   master: "boobly.master",
 };
 
-const VERSION = "v1_4_1_Alpha";
+const VERSION = "v1_4_3_Alpha";
 
 
 /* --------------------------
@@ -257,11 +257,19 @@ const DEFAULT_CHANGELOG = {"app": "BooBly", "schema": 1, "entries": [{"version":
 
 
 const toast = (m) => {
+  const hostId = "toastHost";
+  let host = document.getElementById(hostId);
+  if (!host) {
+    host = document.createElement("div");
+    host.id = hostId;
+    host.className = "toastHost";
+    document.body.appendChild(host);
+  }
   const t = document.createElement("div");
   t.className = "toast";
   t.textContent = m;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2200);
+  host.appendChild(t);
+  setTimeout(() => t.remove(), 2400);
 };
 
 const loadLS = (k, fallback = null) => {
@@ -577,23 +585,42 @@ function trySingleQuotesToDouble(s) {
 }
 function parseJsonLenient(text) {
   const raw = (text || "").trim();
-  if (!raw) return { parsed: null, error: "Empty JSON input.", corrected: null };
+  if (!raw) return { parsed: null, error: "Empty JSON input.", corrected: null, errorInfo: null };
+  const locFromMsg = (msg, source) => {
+    try {
+      const m = String(msg || "");
+      // Common forms:
+      // "Unexpected token ... in JSON at position 123"
+      const posM = m.match(/position\s+(\d+)/i);
+      const pos = posM ? Number(posM[1]) : null;
+      if (pos == null || !Number.isFinite(pos)) return null;
+      const upto = source.slice(0, pos);
+      const lines = upto.split(/\r\n|\n|\r/);
+      const line = lines.length;
+      const col = lines[lines.length - 1].length + 1;
+      return { line, col, pos };
+    } catch { return null; }
+  };
+
   try {
-    return { parsed: JSON.parse(raw), error: null, corrected: null };
-  } catch {}
-  let c = normalizeQuotes(raw);
-  c = stripTrailingCommas(c);
-  try {
-    return { parsed: JSON.parse(c), error: null, corrected: c };
-  } catch {}
-  const c2 = trySingleQuotesToDouble(c);
-  try {
-    return { parsed: JSON.parse(c2), error: null, corrected: c2 };
-  } catch (e) {
-    return { parsed: null, error: String(e.message || e), corrected: c2 };
+    return { parsed: JSON.parse(raw), error: null, corrected: null, errorInfo: null };
+  } catch (e0) {
+    const info = locFromMsg(e0?.message, raw);
+    // continue with auto-fix attempts
+    let c = normalizeQuotes(raw);
+    c = stripTrailingCommas(c);
+    try {
+      return { parsed: JSON.parse(c), error: null, corrected: c, errorInfo: null };
+    } catch {}
+    const c2 = trySingleQuotesToDouble(c);
+    try {
+      return { parsed: JSON.parse(c2), error: null, corrected: c2, errorInfo: null };
+    } catch (e) {
+      const info2 = locFromMsg(e?.message, c2) || info;
+      return { parsed: null, error: String(e.message || e), corrected: c2, errorInfo: info2 };
+    }
   }
 }
-
 /* --------------------------
    Helpers
 --------------------------- */
@@ -653,6 +680,54 @@ function codeBlock(jsonText, onCopy) {
     el("button", { class: "codeCopy", onclick: onCopy, title: "Copy" }, "⧉"),
     el("div", { html: highlightJsonToHtml(jsonText) }),
   ]);
+
+function jsonEditor(value, opts = {}) {
+  // opts: { onInput(text), errorInfo:{line,col}, placeholder }
+  const v = String(value ?? "");
+  const lines = v.split(/\r\n|\n|\r/);
+  const ln = el("div", { class: "codeLines", "aria-hidden": "true" },
+    lines.map((_, i) => el("div", { class: "ln" }, String(i + 1)))
+  );
+
+  const pre = el("div", { class: "codePre", html: highlightJsonToHtml(v) });
+
+  const ta = el("textarea", {
+    class: "codeTa",
+    spellcheck: "false",
+    placeholder: opts.placeholder || "Paste JSON here…",
+  }, v);
+
+  const sync = () => {
+    const t = ta.value;
+    pre.innerHTML = highlightJsonToHtml(t);
+    const lns = t.split(/\r\n|\n|\r/).length;
+    // update line numbers lazily
+    if (ln.childNodes.length !== lns) {
+      ln.innerHTML = "";
+      for (let i = 1; i <= lns; i++) ln.appendChild(el("div", { class:"ln" }, String(i)));
+    }
+    if (opts.errorInfo && opts.errorInfo.line) {
+      [...ln.children].forEach((n, i) => n.classList.toggle("errLine", (i + 1) === opts.errorInfo.line));
+    } else {
+      [...ln.children].forEach((n) => n.classList.remove("errLine"));
+    }
+  };
+
+  ta.addEventListener("scroll", () => {
+    ln.scrollTop = ta.scrollTop;
+    pre.scrollTop = ta.scrollTop;
+  });
+
+  ta.addEventListener("input", () => {
+    sync();
+    if (typeof opts.onInput === "function") opts.onInput(ta.value);
+  });
+
+  // initial highlight
+  setTimeout(sync, 0);
+
+  return el("div", { class: "codeEditor" }, [ln, el("div", { class:"codeMain" }, [pre, ta])]);
+}
 }
 
 function currentPreset() {
@@ -1342,6 +1417,8 @@ const mergerCard = card("Preset Merger", [
       state.rawJsonText = JSON.stringify(state.editableJson, null, 2);
       persistDraft();
       toast("Converted to master");
+      state.page = "edit";
+      ensureOriginalBaseline();
       rerender();
     } }, "Convert → Master"),
   ]);
@@ -1367,7 +1444,7 @@ const mergerCard = card("Preset Merger", [
       hr(),
       actions,
       hr(),
-      codeCard,
+      codeEditor,
     ]),
     consoleNode,
   ].filter(Boolean));
@@ -1758,18 +1835,36 @@ function editPage() {
 
   ensureOriginalBaseline();
 
+
+  const editActionBar = (() => {
+    const saveBtn = el("button", { class:"btn primary", onclick: () => { persistDraftNow(); toast("Saved"); } }, "Save");
+    const copyBtn = el("button", { class:"btn", onclick: async () => {
+      try { await copyToClipboard(JSON.stringify(state.editableJson, null, 2)); toast("Copied JSON"); }
+      catch { toast("Copy blocked"); }
+    } }, "Copy");
+    const optBtn = el("button", { class:"btn", onclick: () => { persistDraftNow(); state.page = "export"; rerender(); } }, "Optimize");
+    const dlBtn = el("button", { class:"btn", onclick: () => { downloadJson("boobly-edit.json", state.editableJson); } }, "Download JSON");
+    return el("div", { class:"editActionBar", role:"toolbar", "aria-label":"Edit actions" }, [saveBtn, copyBtn, optBtn, dlBtn]);
+  })();
   const master = state.master;
   const hasCanonical = !!(state.editableJson && (state.editableJson.characters || state.editableJson.scene || state.editableJson.schema_version));
 
   const convertToCanonical = () => {
-    const out = canonicalizeAny(state.editableJson || {}, master);
-    state.editableJson = out;
+    try {
+      const out = canonicalizeAny(state.editableJson || {}, master);
+      state.editableJson = out;
     state.lastValidationIssues = validateCanonical(out, master);
     state.rawJsonText = JSON.stringify(out, null, 2);
     state.originalJson = JSON.parse(JSON.stringify(out));
     persistDraft();
     toast(`Converted to Canonical v${out.schema_version || master?.meta?.canonical_version || ""}`);
+    // switch to guided after conversion when possible
+    state.editMode = "guided";
     rerender();
+    } catch (e) {
+      console.error(e);
+      toast("Convert failed: " + (e?.message || e));
+    }
   };
 
   const characters = Array.isArray(state.editableJson?.characters) ? state.editableJson.characters : [];
@@ -2189,7 +2284,7 @@ function editPage() {
     return el("div", { class:"fieldRow" }, [
       el("div", { class:"fieldLeft" }, [
         el("div", { class:"fieldLabel" }, field.label),
-        field.help_text ? el("div", { class:"small fieldHelp" }, field.help_text) : null,
+        el("div", { class:"small fieldHelp" }, field.help_text || field.description || (field.label ? `${field.label} — choose a value.` : "Choose a value.")),
       ].filter(Boolean)),
       el("div", { class:"fieldRight" }, [
         el("div", { class:"fieldActions" }, [chipNode, resetBtn]),
@@ -2268,7 +2363,7 @@ function editPage() {
     ? el("div", {}, [card("Expert Mode", [el("div", { class:"small" }, "Fallback editor for any JSON. Search, edit, reset to Default." )]), genericKeyEditorCard()].filter(Boolean))
     : guidedContent;
 
-  return el("div", { class: "screen" }, [topBar, body].filter(Boolean));
+  return el("div", { class: "screen" }, [topBar, body, editActionBar].filter(Boolean));
 }
 
 function pickUseCasePrompt(tab) {
@@ -2606,7 +2701,7 @@ function rerender() {
   root.innerHTML = "";
   const overlay = el("div", { class: "wallpaperOverlay" }, []);
   overlay.appendChild(header(pageTitle()));
-  overlay.appendChild(stepper());
+  // stepper removed (global top workflow bar)
   let pageNode;
   try {
     pageNode = route();
@@ -2646,7 +2741,7 @@ async function init() {
 
   // Master file (Option A) — drives Guided/Expert editor.
   const mLS = loadLS(STORAGE.master, null);
-  state.master = mLS || (await fetchJson("master_file_v1_4_2_Alpha.json").catch(() => null));
+  state.master = mLS || (await fetchJson("master_file_v1_4_3_Alpha.json").catch(() => null));
   if (state.master) saveLS(STORAGE.master, state.master);
   state.bundledMaster = JSON.parse(JSON.stringify(state.master));
 

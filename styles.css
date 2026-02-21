@@ -183,8 +183,8 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,45,85,.55); box
 .screen{
   max-width: 980px;
   margin: 0 auto;
-  padding: var(--s4);
-  padding-bottom: 92px; /* space for tabs */
+  padding: clamp(12px, 3vw, 20px);
+  padding-bottom: calc(92px + env(safe-area-inset-bottom)); /* space for tabs */
 }
 
 /* Cards */
@@ -576,3 +576,122 @@ input:focus, select:focus, textarea:focus{border-color: rgba(255,45,85,.55); box
 .row.gap { gap: 10px; flex-wrap: wrap; }
 .btn.primary { background: var(--accent); color: #fff; border-color: transparent; }
 @media (max-width: 520px) { .modal { width: min(96vw, 560px); } .diffBox { max-height: 60vh; } }
+
+
+/* Toasts (foreground, below header) */
+:root{ --header-h: 56px; }
+
+.header{ min-height: var(--header-h); }
+.toastHost{
+  position: fixed;
+  top: calc(var(--header-h) + 8px);
+  left: 0; right: 0;
+  z-index: 9999;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 8px;
+  pointer-events:none;
+  padding: 0 12px;
+}
+.toast{
+  pointer-events:auto;
+  background: rgba(15,23,42,.92);
+  color: white;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+  max-width: min(720px, 92vw);
+  text-align:center;
+}
+
+/* Guided field helper text */
+.fieldHelp{
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+/* Sticky action bar (Edit page) */
+.editActionBar{
+  position: sticky;
+  bottom: calc(62px + env(safe-area-inset-bottom)); /* above tabs */
+  z-index: 45;
+  display:flex;
+  gap: var(--s2);
+  padding: var(--s2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+  margin-top: var(--s4);
+}
+.editActionBar .btn{ flex: 1; }
+
+/* JSON editor (Import page) */
+.codeEditor{
+  display:grid;
+  grid-template-columns: 48px 1fr;
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow:hidden;
+  background: #0b1020;
+}
+.codeLines{
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.55);
+  padding: 10px 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  user-select:none;
+  overflow:hidden;
+}
+.codeLines .ln{
+  padding: 0 10px;
+  height: 18px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+}
+.codeLines .ln.errLine{
+  background: rgba(255,45,85,.20);
+  color: rgba(255,255,255,.9);
+}
+.codeMain{
+  position: relative;
+}
+.codePre{
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  padding: 10px 12px;
+  overflow:auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre;
+  pointer-events:none;
+}
+.codeTa{
+  position:relative;
+  width:100%;
+  min-height: 340px;
+  padding: 10px 12px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  background: transparent;
+  color: transparent; /* text shown by pre */
+  caret-color: #ffffff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 18px;
+}
+@media (max-width: 520px){
+  .editActionBar{ flex-wrap:wrap; }
+  .editActionBar .btn{ flex: 1 1 calc(50% - 8px); }
+}
+
+.stepper{display:none!important}
