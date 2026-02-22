@@ -681,6 +681,7 @@ function codeBlock(jsonText, onCopy) {
     el("button", { class: "codeCopy", onclick: onCopy, title: "Copy" }, "⧉"),
     el("div", { html: highlightJsonToHtml(jsonText) }),
   ]);
+}
 
 function jsonEditor(value, opts = {}) {
   // opts: { onInput(text), errorInfo:{line,col}, placeholder }
@@ -728,7 +729,6 @@ function jsonEditor(value, opts = {}) {
   setTimeout(sync, 0);
 
   return el("div", { class: "codeEditor" }, [ln, el("div", { class:"codeMain" }, [pre, ta])]);
-}
 }
 
 function currentPreset() {
