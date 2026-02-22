@@ -1,7 +1,30 @@
 [
   {
+    "id": "blank_preset_canonical",
+    "name": "Blank (Canonical)",
+    "created": 0,
+    "json": {
+      "schema_version": "1.3.0",
+      "scene": {},
+      "characters": [
+        {
+          "id": "",
+          "name": "Character 1"
+        }
+      ],
+      "style": {},
+      "technical": {},
+      "notes": {
+        "unmapped": {},
+        "source_text": "",
+        "adapter_log": []
+      }
+    },
+    "image": null
+  },
+  {
     "id": "40801665-0a66-48f0-931d-ad94679e6545",
-    "name": "Beach Selfie \u2014 Golden Hour",
+    "name": "Beach Selfie — Golden Hour",
     "created": 0,
     "json": {
       "subject": {
@@ -36,7 +59,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -56,7 +79,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "natural soft daylight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -139,7 +162,7 @@
   },
   {
     "id": "2048b11a-90d3-4a0a-888d-d44c498d8eb7",
-    "name": "Old Town Street \u2014 Fashion Walk",
+    "name": "Old Town Street — Fashion Walk",
     "created": 0,
     "json": {
       "subject": {
@@ -174,7 +197,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -194,7 +217,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "golden hour sunlight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -277,7 +300,7 @@
   },
   {
     "id": "a4f71ff0-2a92-4317-91e6-e1634c89669f",
-    "name": "Beach Close-up \u2014 Soft Daylight",
+    "name": "Beach Close-up — Soft Daylight",
     "created": 0,
     "json": {
       "subject": {
@@ -312,7 +335,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -332,7 +355,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "natural soft daylight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -415,7 +438,7 @@
   },
   {
     "id": "c0a950f8-9d17-44df-897f-3ee67cd51dd4",
-    "name": "Ocean Splash \u2014 Sunlit",
+    "name": "Ocean Splash — Sunlit",
     "created": 0,
     "json": {
       "subject": {
@@ -450,7 +473,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -470,7 +493,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "natural soft daylight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -553,7 +576,7 @@
   },
   {
     "id": "6233d87e-12ee-480f-a388-03df4377afba",
-    "name": "Bathroom Mirror \u2014 Indoor Softbox",
+    "name": "Bathroom Mirror — Indoor Softbox",
     "created": 0,
     "json": {
       "subject": {
@@ -588,7 +611,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -608,7 +631,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "natural soft daylight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -691,7 +714,7 @@
   },
   {
     "id": "9d1d7146-74ec-428a-aa47-d7de5bf98e78",
-    "name": "Mountain Camp \u2014 Autumn Trail",
+    "name": "Mountain Camp — Autumn Trail",
     "created": 0,
     "json": {
       "subject": {
@@ -726,7 +749,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -746,7 +769,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "soft overcast daylight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
@@ -829,7 +852,7 @@
   },
   {
     "id": "13aa1981-5027-44ec-be37-cfe08a0c3ec9",
-    "name": "Tropical Bikini \u2014 Shoreline",
+    "name": "Tropical Bikini — Shoreline",
     "created": 0,
     "json": {
       "subject": {
@@ -864,7 +887,7 @@
         },
         "pose": {
           "stance": "standing",
-          "body_angle": "\u00be angle",
+          "body_angle": "¾ angle",
           "torso": "upright",
           "head": "forward",
           "arms": "relaxed beside torso",
@@ -884,7 +907,7 @@
         "orientation": "portrait",
         "lighting": {
           "type": "warm golden sunlight",
-          "direction": "\u00be front",
+          "direction": "¾ front",
           "intensity": "soft",
           "color_temperature": "neutral",
           "effects": [
