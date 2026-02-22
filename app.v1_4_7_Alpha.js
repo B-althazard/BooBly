@@ -27,6 +27,23 @@ function validateMaster(m) {
   return issues;
 }
 
+
+function logAdapter(targetObj, action, meta = {}) {
+  // Records adapter/conversion steps for reporting/debugging.
+  try {
+    if (!targetObj) return;
+    if (!targetObj.notes) targetObj.notes = {};
+    if (!targetObj.notes.adapter_log) targetObj.notes.adapter_log = [];
+    targetObj.notes.adapter_log.push({
+      ts: new Date().toISOString(),
+      action: String(action || ""),
+      ...meta,
+    });
+  } catch (_) {
+    // no-op: adapter logging must never break conversion
+  }
+}
+
 function canonicalizeAny(inputObj, master) {
   const j = inputObj || {};
   const hasCanonical = !!(j && (j.characters || j.scene || j.schema_version));
